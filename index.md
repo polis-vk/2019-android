@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Android разработка для начинающих
 ---
 
