@@ -201,7 +201,7 @@ if (что-то неправильное случилось) {
 }
 ```
 
-В `BuildConfog` можно добавлять свои собственные константы. Для этого нужно добавить определение константы в `build.gradle`:
+В `BuildConfog` можно добавлять свои собственные константы. Для этого нужно добавить определение константы в `build.gradle`, и они будут добавлены статическими полями в класс `BuildGradle` во время сборки:
 ```
 android {
 	defaultConfig {
@@ -219,11 +219,168 @@ android {
     }
 }
 ```
+Это самый простой и эффективный способ конфигурировать разные версии приложения внешними параметрами.
+
+## Логирование
+
+В Android есть единый системный лог, в который попадают сообщения от всех компонентов системы и от всех приложений. Инструмент для просмотра логов называется **Logcat** -- он встроен а в Android Studio, и для него есть одноименное окно, в котором можно просматривать логи:
+<img src="img/0660_logcat.png" width="1000px"/>
+
+Logcat работает в режиме реального времени -- вы можете видеть логи, которые печатаются прямо сейчас или были напечатаны недавно (благодаря небольшому кольцевому буферу, который есть в операционной системе Android), но вы не можете поднять логи за вчера  -- они никуда не записываются. Поэтому логи в Android -- это в первую очередь инструмент отладки, который используется в процессе разработки приложения, а не журнал, по которому можно восстановить историю событий за прошедшее время.
+
+Приложения могут писать в логи при помощи стандартного класса `android.util.Log`, в котором есть набор методов для печати сообщений в лог с разным приоритетом. Вот базовый список методов в порядке убывания приоритета:
+<img src="img/0670_log_methods.png" width="600px"/>
+
+Первый параметр -- всегда тэг. Обычно это строковая константа, по которой потом можно найти интересующие нас сообщения в логах. Использование `Log` в коде обычно выглядит так:
+```
+    private static final boolean LOG = true;
+    private static final String LOG_TAG = "Hello";
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        if (LOG) Log.d(LOG_TAG, "HelloWorldActivity.onCreate");
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_hello_world);
+    }
+```
+При выполнении этого кода в момент старта активности `HelloWorldActivity` в лог будет напечатано такое сообщение:
+```
+2019-01-25 12:06:20.919 29747-29747/ru.ok.technopolis.helloworld D/Hello: HelloWorldActivity.onCreate
+```
+Оно содержит точное время, ID юзера (`29747`), процесса (`29747`) и приложения (`ru.ok.technopolis.helloworld`), из которого пришел лог, метка приоритета `D`, тэг `Hello` и собственно сообщение. В окне Logcat в Android Studio можно осуществлять поиск по логам, фильтровать по произвольной подстроке и по приоритету и таким образом видеть только те логи, которые вас интересуют в данный момент.
+
+Добавлять логи в код приложения, в разные критические или просто неочевидные места, и особенно там, где происходит какая-то ошибка -- хорошая привычка, которую желательно выработать. Большую часть времени добавленные логи не пригождаются, но иногда с вашим приложением происходит что-то странное, и только логи могут помочь разобраться.
+
+Обратите внимание на то, как метод логирования вызывается под условием:
+```
+if (LOG) Log.d(...)
+```
+Использование константы `LOG` необходимо по двум причинам:
+- Можно включить или выключить все логи сразу, изменив одну константу.
+- В выключенном состоянии выражение `if (LOG)` эквивалентно `if (false)`, и Java компилятор полностью вырежет весь код, следующий за условием. В релизной версии, в которой обычно логи выключены, это то, что нам нужно -- избавиться от лишнего неиспользуемого кода. Для того, чтобы это работало, константа `LOG` должна быть определена именно константой (`static final`).
+
+Удобнее всего определять константу `LOG` при помощи `BuildConfig`. Для этого надо написать следующее в `build.gradle` приложения:
+```
+buildTypes {
+    release {
+    	// ...
+    	buildConfigField "boolean", "LOG", "false"
+    }
+    debug {
+    	// ...
+    	buildConfigField "boolean", "LOG", "true"
+    }
+}
+```
+и в коде использовать `BuildConfig.LOG` -- это будет одна константа на все приложение:
+```
+if (BuildConfig.LOG) Log...
+```
+
+## Падение приложения
+
+Когда при выполнении кода приложения выбрасывается исключение, которое никто не ловит, приложение падает -- выполнение кода прекращается, виртуальная машина останавливается и процесс приложения завершается. Это называется **крэш** (crash). Пользователь при этом видит системное сообщение о том, что приложение упало:
+<img src="img/0680_force_close.png" width="400px"/>
+
+а в лог при этом печатается сообщение о падении со стек трейсом, по которому можно понять, что и где в коде приложения пошло не так.
+
+Для примера попробуем изменить код `HelloWorldActivity` так, чтобы он упал: при вызове `setContentView` из метода `onCreate` замените идентификатор файла верстки `R.layout.activity_hello_world` на идентификатор строки `R.string.hello_world`:
+```
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        if (LOG) Log.d(LOG_TAG, "HelloWorldActivity.onCreate");
+        super.onCreate(savedInstanceState);
+        setContentView(R.string.hello_world);
+    }
+```
+
+Это неправильное использование метода `setContentView` -- строка совершенно не подходит для того, чтобы из нее загрузили верстку -- поэтому приложение упадет при старте. В логе мы увидим следующее:
+```
+2019-01-25 13:14:02.357 32761-32761/ru.ok.technopolis.helloworld E/AndroidRuntime: FATAL EXCEPTION: main
+    Process: ru.ok.technopolis.helloworld, PID: 32761
+    java.lang.RuntimeException: Unable to start activity ComponentInfo{ru.ok.technopolis.helloworld/ru.ok.technopolis.helloworld.HelloWorldActivity}: android.content.res.Resources$NotFoundException: File Здравствуй, Мир! from xml type layout resource ID #0x7f0b002c
+        at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2913)
+        at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048)
+        at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78)
+        at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108)
+        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68)
+        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808)
+        at android.os.Handler.dispatchMessage(Handler.java:106)
+        at android.os.Looper.loop(Looper.java:193)
+        at android.app.ActivityThread.main(ActivityThread.java:6669)
+        at java.lang.reflect.Method.invoke(Native Method)
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858)
+     Caused by: android.content.res.Resources$NotFoundException: File Здравствуй, Мир! from xml type layout resource ID #0x7f0b002c
+        at android.content.res.ResourcesImpl.loadXmlResourceParser(ResourcesImpl.java:1192)
+        at android.content.res.Resources.loadXmlResourceParser(Resources.java:2157)
+        at android.content.res.Resources.getLayout(Resources.java:1155)
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:421)
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:374)
+        at com.android.internal.policy.PhoneWindow.setContentView(PhoneWindow.java:420)
+        at android.app.Activity.setContentView(Activity.java:2771)
+        at ru.ok.technopolis.helloworld.HelloWorldActivity.onCreate(HelloWorldActivity.java:16)
+        at android.app.Activity.performCreate(Activity.java:7136)
+        at android.app.Activity.performCreate(Activity.java:7127)
+        at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1271)
+        at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2893)
+        at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048) 
+        at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78) 
+        at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108) 
+        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68) 
+        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808) 
+        at android.os.Handler.dispatchMessage(Handler.java:106) 
+        at android.os.Looper.loop(Looper.java:193) 
+        at android.app.ActivityThread.main(ActivityThread.java:6669) 
+        at java.lang.reflect.Method.invoke(Native Method) 
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493) 
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858) 
+     Caused by: java.io.FileNotFoundException: Здравствуй, Мир!
+        at android.content.res.AssetManager.nativeOpenXmlAsset(Native Method)
+        at android.content.res.AssetManager.openXmlBlockAsset(AssetManager.java:957)
+        at android.content.res.ResourcesImpl.loadXmlResourceParser(ResourcesImpl.java:1176)
+        at android.content.res.Resources.loadXmlResourceParser(Resources.java:2157) 
+        at android.content.res.Resources.getLayout(Resources.java:1155) 
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:421) 
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:374) 
+        at com.android.internal.policy.PhoneWindow.setContentView(PhoneWindow.java:420) 
+        at android.app.Activity.setContentView(Activity.java:2771) 
+        at ru.ok.technopolis.helloworld.HelloWorldActivity.onCreate(HelloWorldActivity.java:16) 
+        at android.app.Activity.performCreate(Activity.java:7136) 
+        at android.app.Activity.performCreate(Activity.java:7127) 
+        at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1271) 
+        at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2893) 
+        at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048) 
+        at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78) 
+        at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108) 
+        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68) 
+        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808) 
+        at android.os.Handler.dispatchMessage(Handler.java:106) 
+        at android.os.Looper.loop(Looper.java:193) 
+        at android.app.ActivityThread.main(ActivityThread.java:6669) 
+        at java.lang.reflect.Method.invoke(Native Method) 
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493) 
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858) 
+2019-01-25 13:14:02.364 1895-2216/? W/ActivityManager:   Force finishing activity ru.ok.technopolis.helloworld/.HelloWorldActivity
+```
+
+Первое, что мы видим -- это строка со словами **FATAL EXCEPTION** и идетнтификаторами упавшего приложения. Так (почти) всегда начинается сообщение о падении приложения, и если вам надо быстро найти в логе крэш, то проще всего искать его по этим словам.
+
+Затем идет сообщение о непойманном исключении со стэк трейсом -- то, что позволит нам найти причину падения. Обычно в стек трейсе можно найти ссылки на код приложения, который привел к ошибке, и в первую очередь нам надо их найти по имени Java пакета, который мы используем в нашем приложении (`ru.ok.technopolis.helloworld`). Часто стек трейс состоит из нескольких частей, каждая из которых начинается со слов `Caused by` -- это говорит о том, что исключение несколько раз ловилось в различных местах в коде, но не было обработано, а было обернуто в новый тип исключения и проброшено дальше. Вы быстро научитесь ориентироваться в стек трейсах, но если поиск нужной строчки вызывает затруднения, то можно действовать так: 
+- найдите последнюю часть стек трейса, начинающуюся со слов `Сaused by`
+- начинайте просматривать трейс сверху вниз
+- ищите первую строчку, принадлежащую вашему коду.
+
+Найденная строчка, возможно, и является причиной падения. В данном случае мы находим строчку
+```
+at ru.ok.technopolis.helloworld.HelloWorldActivity.onCreate(HelloWorldActivity.java:16) 
+```
+Это то самое место, в котором мы сделали неправильный вызов `setContentView`.
+
+## Отладка дебаггером
+
 
 ## Лишние файлы
-## Логирование и BuildConfig файл
-## Падение приложения
-## Отладка дебаггером
 ## Сборка проекта из командной строки -- Gradle
 ## Запуск приложения из командной строки -- ADB
 
