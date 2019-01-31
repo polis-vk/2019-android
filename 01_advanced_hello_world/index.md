@@ -370,6 +370,110 @@ public class HelloUsernameActivity extends Activity
 
 Теперь при старте приложения `TextView` с неправильным текстом на экране не отображается, а после клика на кнопку появляется правильно отформатированный текст.
 
+## Запуск Activity из кода
+
+Мы сделали приложение, состоящее из двух Activity, каждая из которых прописана в манифесте как точка входа с домашнего экрана. Это, на самом деле, редко используемая практика. Обычно одно приложение размещает на домашнем экране один ярлык, соответствующий главной точке входа в приложение -- основнуу её активность, а уже внутри приложения пользователь переходим между разными экранами.
+
+Сейчас мы сделаем так же: создадим активность `MainActivity` с двумя кнопками, по клику на которые будет происходить переход в `HelloWorldActivity` либо в `HelloUsernameActivity`. И только одна `MainAcitvity` будет запускаться из домашнего экрана устройства.
+
+Для запуска Activity из кода мы будем использовать Intent (интент) -- это абстрактное описание чего-то, что вы хотите запустить. Интенты широко используются в Android и являются основным способом запуска других приложений, активностей, сервисов -- практически всего, что можно запустить. 
+
+Интенты создаются при помощи класса `android.content.Intent` в документации к которому ([https://developer.android.com/reference/android/content/Intent](https://developer.android.com/reference/android/content/Intent)) можно прочитать про разные способы запуска других активностей при помощи интентов. Общий принцип работы интентов такой: вы в общих чертах описываете, что вы хотите запустить, а операционная система находит подходящее под описание приложение и активность в нём. Наприм, вы можете захотеть запустить какое-нибудь приложение, которое умеет отображать географические координаты (которые задаются при помощи URI со схемой `geo:`) -- система по такому интенту предолжит вам разнообразные картографические приложения и навигаторы. 
+
+Мы же будем использовать самый простой вариант, когда вместо абстрактного описания того, что мы хотим запустить, мы явно укажем приложение и Acitivity в нём, а система его для нас запустит. Для этого используется такой конструктор `Intent`:
+```
+Intent(Context packageContext, Class<Activity> activityClass);
+```
+Первый параметр указывает на контекст приложения, которое мы хотим запустить (если мы выполняем код внутри Activity, то можем использовать `this`, потому что `Activity` является контекстом нашего собственного приложения). Второй параметр указывает на активность внутри нашего приложения, которую мы хотим запустить.
+
+Имея объект интента, запуск активности выполняется при помощи метода `Context.startActivity(Intent intent)`:
+```
+Intent intent = new Intent(this, HelloWorldActivity.class);
+startActivity(intent);
+```
+Нужно иметь в виду, что может оказаться, что система не сможет найти подходящее приложение и активность для вашего интента, и в таком случае будет выброшено исключение `ActivityNotFoundException`, которое надо поймать и что-то предринять:
+```
+try {
+	startActivity(intent);
+} catch (ActivityNotFoundException e) {
+	// TODO: notify user or navigate to Google Play to install the missing app?
+}
+```
+
+## Добавляем MainActivity
+
+Создайте класс активности `MainActivity` в пакете `ru.ok.technopolis.helloworld` и добавьте её в манифест с интент-фильтром MAIN+LAUNCHER (такой же, как мы использовали для `HelloWorldActivity`), а у активностей `HelloWorldActivity` и `HelloUsernameActivity` уберите интент-фильтры (они больше не нужны, потому что эти активности теперь будут запускаться из кода, а не из домашнего экрана):
+```
+<activity android:name=".MainActivity"
+                  android:label="@string/app_name">
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+    </intent-filter>
+</activity>
+
+<activity android:name=".HelloWorldActivity"
+          android:label="@string/activity_hello_world"/>
+
+<activity android:name=".HelloUsernameActivity"
+          android:label="@string/activity_hello_user"/>
+```
+
+Создайте файл верстки `activity_main.xml` с двумя кнопками:
+```
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/btn_hello_world"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/activity_hello_world"/>
+
+    <Button
+        android:id="@+id/btn_hello_user"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/activity_hello_user"/>
+
+</LinearLayout>
+```
+В качестве текста для кнопок здесь используются ранее созданные ресурсы `@string/activity_hello_world` и `@string/activity_hello_user`, а для ID кнопок мы создали новые ресурсы типа id: `@+id/btn_hello_world` и `@+id/btn_hello_user` -- их мы будем использовать в коде для обработки кликов.
+
+В классе `MainActivity` напишите код, который загружает верстку и устанавливает обработчики кликов на кнопки:
+```
+@Override
+protected void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    findViewById(R.id.btn_hello_world).setOnClickListener(this);
+    findViewById(R.id.btn_hello_user).setOnClickListener(this);
+}
+```
+и добавьте тело метода обработчика клика (обрабочтичком клика является сам класс `MainActivity`, поэтому он должен объявить интерфейс обработчика кликов `implements View.OnClickListener`):
+```
+@Override
+public void onClick(View v) {
+
+}
+```
+
+В этом методе мы должны определить, какая кнопка нажата, и запустить соответсввующую активность при помощи явного интента. Вот код, который это делает:
+```
+if (v.getId() == R.id.btn_hello_user) {
+    startActivity(new Intent(this, HelloUsernameActivity.class));
+} else if (v.getId() == R.id.btn_hello_world) {
+    startActivity(new Intent(this, HelloWorldActivity.class));
+}
+```
+
+Если всё сделано правильно, то теперь при запуске приложения мы увидим экран `MainActivity` с двумя кнопками, и сможем переходить в другие экраны, кликая на кнопки, и возвращаться назад в `MainAсtivity` нажатием на Back.
+
+<img src="img/0570_hello_demo.gif" width="360px"/>
+
+
 ## Заключение
 
 Вот список тем, которые были освещены в этом уроке:
@@ -384,5 +488,6 @@ public class HelloUsernameActivity extends Activity
 - Обработка кликов, интерфейс `View.OnClickListener`
 - Форматирование тектса при помощи строковых ресурсов
 - View Visibility
+- Запуск Activity из кода при помощи Intent
 
 
