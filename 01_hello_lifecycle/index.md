@@ -308,3 +308,68 @@ HelloUsernameActivity.onDestroy
 ```
 
 <img src="img/lifecycle3.gif" width="400px"/>
+
+### Сценарий с полупрозрачной активностью
+
+В предыдущем примере вторая активность полностью закрывала собой первую активность, поэтому первая активность уходила в невидимое состояние через вызовы `onPause` и `onStop`. Возможна ситуация, в которой первая активность всё-таки останется видимой в то время, как поверх нее отображается другая активность. Например, если вторая активность отображается в полупрозрачном окне. В таком случае пользователь видит первую активность (которая находится в видимой фазе жизненного цикла), но не может с ней взаимодействовать, потому что в один момент времени только одна активность может быть в активном состоянии.
+
+Попробуем воспроизвести этот сценарий -- для этого сделаем окно HelloWorldActivity прозрачным. Для этого нам понадобится создать новую тему и применить её к HelloWorldActivity. Откройте файл `res/values/styles.xml`. В нем должен быть приблизительно такой код:
+```
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+```
+Этот код был автоматически сгенерирован Android Studio при создании проекта, он определяет базовую тему приложения, которая применяется ко всем активностям. Тема -- это набор атрибутов со значениями, которые используются в различных компонентах приложения, в-основном, в UI компонентах. В манифесте приложения (в файле `AndroidManifest.xml`) у каждой активности можно указать тему, которая к ней будет применяться, и значения атрибутов которой будут использоваться в UI внутри этой активности. Если у активности в манифесте не указана тема, то к ней применяется базовая тема приложения, указанная в элементе application:
+```
+<application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+```
+
+На данный момент в нашем приложении базовая тема называется `AppTheme`, и она наследует от темы `Theme.AppCompat.Light.DarkActionBar` -- это какая-то стандартная тема из библиотеки App Compat Support Library, которую  Android Studio решила использовать как дефолтную. Кстати, именно благодаря этой дефолтной теме окно активности выглядит именно так: сплошное окно на весь экран с белым фоном -- это определено где-то в родительской теме.
+
+Мы создадим новую тему, в которой унаследуем всё из базовой темы, и переопределим один атрибут для того, чтобы окно активности стало полупрозрачным. Добавьте этот код в файл `res/values/styles.xml`:
+```
+	<style name="AppTheme.Floating">
+        <item name="android:windowIsFloating">true</item>
+    </style>
+```
+
+Обратите внимание на название темы: `AppTheme.Floating`: оно использует специальный синтаксис, в котором сначала указывается имя родительской темы, потом идет точка, а после точки -- уникальное название этой темы. Этот синтаксис равносилен вот такому явному определению темы: `<style name="AppTheme.Floating" parent="AppTheme">` (Который, в свою очередь, является сокращенным вариантом полного каноничного синтаксиса с правильной ссылкой на ресурс родительской темы: `style name="AppTheme.Floating" parent="@style/AppTheme"`).
+
+Теперь укажите эту тему в манифесте (`AndroidManifest.xml`) у активности HelloWorldActivity:
+```
+<activity android:name=".HelloWorldActivity"
+          android:label="@string/activity_hello_world"
+          android:theme="@style/AppTheme.Floating">
+```
+
+Если запустить приложение и перейти в HelloWorldActivity, то оно будет выглядеть так:
+
+<img src="img/0720_translucent_window.png" width="400px"/>
+
+Атрибут `windowIsFloating=true` сделал окно полупрозрачным и сжал размер контента до минимально необходимого -- поэтому мы видим белый фон только у текста в центре экрана. При переходе из MainActivity в HelloWorldActivity и обратно в логе мы видим следующие вызовы методов жизненного цикла:
+```
+MainActivity.onPause
+HelloUsernameActivity.onCreate
+HelloUsernameActivity.onStart
+HelloUsernameActivity.onResume
+
+HelloUsernameActivity.onPause
+MainActivity.onResume
+HelloUsernameActivity.onStop
+HelloUsernameActivity.onDestroy
+```
+Отличие от сценария с непрозрачным окном -- у MainActivity не вызываются `onStop` и `onStart`, потому что она остается видимой.
+
+<img src="img/lifecycle4.gif" width="400px"/>
+
+В этом примере полупрозрачное окно поверх MainActivity было сделано искуственно, но даже если в вашем приложении нет полупрозрачных окон, такой сценарий всё равно возможен, если поверх вашего приложения "выскочит" какое-то другое с полупрозрачным окном. Это совершенно обычное дело, самый простой пример -- входящий звонок -- и к этому надо быть готовым. Разработчики должны иметь в виду, что их активности могут легко оказаться в видимом, но неактивном состоянии.
