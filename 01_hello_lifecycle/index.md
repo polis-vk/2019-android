@@ -258,11 +258,53 @@ MainActivity.onResume
 ```
 Теперь нажмите Back -- приложение закроется, а в логе появится следующее:
 ```
-MainActivity.onCreate
-MainActivity.onStart
-MainActivity.onResume
+MainActivity.onPause
+MainActivity.onStop
+MainActivity.onDestroy
 ```
 Это базовый сценарий старта и финиша активности, в которой она проходит все стадии жизненного цикла от `onCreate` до `onDestroy`.
 
 <img src="img/lifecycle1.gif" width="400px"/>
 
+### Переключение между тасками
+
+Запустите приложение, затем откройте список недавних тасков (системная кнопка) и переключитесь в какой-нибудь другой таск:
+```
+MainActivity.onCreate
+MainActivity.onStart
+MainActivity.onResume
+MainActivity.onPause
+MainActivity.onStop
+```
+Мы видим, что MainActivity не была уничтожена -- она была остановлена и осталась в невидимом состоянии. Теперь, если переключиться обратно в таск MainActivity, он вернется в активное состояние, пройдя через вызовы методов жизненного цикла:
+```
+MainActivity.onStart
+MainActivity.onResume
+```
+<img src="img/lifecycle2.gif" width="400px"/>
+
+### Сценарий с двумя активностями
+
+Запустите приложение, нажмите на Hello User -- произойдет переход в активность HelloUsernameActivity. С точки зрения MainActivity это будет такой же уход в невидимое состояние, как и в сценарии с переключением между тасками, а с точки зрения HelloUsernameActivity это будет обычный старт, как в базовом сценарии. Здесь инетересно увидеть, как параллельно меняются состояния двух активностей: сначала MainActivity переходит в неактивное состояние (вызывается `onPause`), потом стартует и становится видимой вторая активность, и уже после этого MainActivity переходит в невидимое состояние (вызывается `onStop`):
+```
+MainActivity.onCreate
+MainActivity.onStart
+MainActivity.onResume
+
+MainActivity.onPause
+HelloUsernameActivity.onCreate
+HelloUsernameActivity.onStart
+HelloUsernameActivity.onResume
+MainActivity.onStop
+```
+
+При нажатии на Back и переходе обратно из HelloUsernameActivity в MainActivity всё происходит наоборот: сначала HelloUsernameActivity становится неактивной (`onPause`), потом MainActivity возвращается из невидимого состояния в активное (`onStart`, `onResume`), и только после этого HelloUsernameActivity останавливается и уничтожается (`onStop`, `onDestory`):
+```
+HelloUsernameActivity.onPause
+MainActivity.onStart
+MainActivity.onResume
+HelloUsernameActivity.onStop
+HelloUsernameActivity.onDestroy
+```
+
+<img src="img/lifecycle3.gif" width="400px"/>
