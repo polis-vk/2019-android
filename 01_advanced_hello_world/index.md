@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: Создание Hello World приложения Advanced level
 highlight: true
 ---
