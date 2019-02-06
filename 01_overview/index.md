@@ -9,4 +9,5 @@ title: Курс Android разработки в Технополисе
 - [Hello World Internals](../01_internals/)
 - [Hello World Advanced](../01_advanced_hello_world/)
 - [Введение в жизненный цикл](../01_hello_lifecycle/)
+- [Делаем приложение огонь!](../01_doom_fire/)
 
