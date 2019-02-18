@@ -8,7 +8,7 @@ highlight: true
 
 ## Обзор
 
-`Constraints` — это линии разметки, на основе которых располагаются `View` внутри `ConstraintLayout`. `Constraints` могут быть привязаны к сторонам родителя или к сторонам других `View`. `ConstraintLayout` это `RelativeLayout` на стероидах. `Constraints` можно разделить на вертикальные и горизонтальные.
+`Constraints` — это линии разметки, на основе которых располагаются `View` внутри `ConstraintLayout`. `Constraints` могут быть привязаны к сторонам родителя или к сторонам других `View`. `ConstraintLayout` это `RelativeLayout` на "стероидах". `Constraints` можно разделить на вертикальные и горизонтальные.
 
 Горизонтальные `Constraints`:
 
@@ -56,8 +56,6 @@ dependencies {
 - при привязке `Start` или `End` игнорируются привязки `Left`и `Right`;
 - `Baseline` можно привязать только к `Baseline`;
 - при привязке `Baseline` игнорируются привязки `Top` и `Bottom`.
-
-
 
 **Размеры View**
 
@@ -335,8 +333,369 @@ dependencies {
 
 <img src="img/constraint_short_wrap.png" width="400px"/>
 
-
 Аналогичная работают атрибуты высоты `View`. При использовании значения `wrap_content` будьте внимательны и не забывайте, что иногда ваша `View` может выйти за границы `Constraints`
 
 **Нельзя** использовать значения `match_parent` или `fill_parent`!
 
+## Bias и Baseline
+
+**Bias**
+
+Если у `View` привязать два вертикальных `Constraints`, то ей можно выставить вертикальное относительное расположение, аналогично и для горизонтальных `Constraints`.
+
+За положение относительно привязанных сторон отвечают два атрибута:
+
+- `layout_constraintHorizontal_bias` - горизонтальное положение;
+- `layout_constraintVertical_bias` - вертикальное положение.
+
+`Bias` принимают значения от 0 до 1.
+
+Если нам нужно расположить `View` в крайнем левом положении, то `Bias` будет равен 0, справа - 1, по середине - 0.5.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Text 2"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_1" />
+
+    <TextView
+        android:id="@+id/text_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Text 3"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_2" />
+
+</android.support.constraint.ConstraintLayout>
+```
+
+<img src="img/bias.png" width="400px"/>
+
+**Baseline**
+
+`View`, привязанная по Baseline, не может быть ограничена ни снизу, ни сверху. Значения `Top Constraints` и `Bottom Constraints` будут проигнорированы.
+
+Стоит обратить внимание, что так как мы не отвечаем за привязку верха и низа, то наше `View` может выйти за пределы родителя.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="60sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/text_1"
+        app:layout_constraintStart_toEndOf="@+id/text_1" />
+
+</android.support.constraint.ConstraintLayout>
+```
+<img src="img/wrong_baseline.png" width="400px"/>
+
+Правильно было бы привязать первое `TextView` ко второму:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/text_2"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="60sp"
+        app:layout_constraintStart_toEndOf="@+id/text_1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>
+```
+
+<img src="img/right_baseline.png" width="400px"/>
+
+## Chain и Group
+
+**Chain**
+
+В случае, если вы привязали стороны элементов друг к другу последовательно - это элементы образуют цепь. К цепям применяются особые правила расположения.
+
+Цепь элементов может существовать как сама по себе, так и может быть привязана к сторонам родителя.
+
+Простейшая цепь элементов выглядит следующим образом:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_1" />
+
+    <TextView
+        android:id="@+id/text_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00ff00"
+        android:text="Text 3"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_2" />
+
+</android.support.constraint.ConstraintLayout>
+```
+<img src="img/simple_chain.png" width="400px"/>
+
+Цепь элементов имеет тип `layout_constraintHorizontal_chainStyle` или `layout_constraintVertical_chainStyle`, по-умолчанию тип равен `spread`, что означает равномерно распределение элементов.
+
+Для того, что бы установить тип цепи, необходимо добавить атрибут первому из элементов цепи.
+
+Кроме типа `spread`, существуют и другие типы:
+
+- `spread_inside`.  Элементы цепи расположены равномерно, но отступ от границы цепи, до родительского элемента отсутствует.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_1" />
+
+    <TextView
+        android:id="@+id/text_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00ff00"
+        android:text="Text 3"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_2" />
+
+</android.support.constraint.ConstraintLayout>
+```
+
+<img src="img/spread_chain.png" width="400px"/>
+
+- `packed`.  Элементы расположены в центре цепи друг за другом.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_1" />
+
+    <TextView
+        android:id="@+id/text_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00ff00"
+        android:text="Text 3"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_2" />
+
+</android.support.constraint.ConstraintLayout>
+```
+
+<img src="img/packed_chain.png" width="400px"/>
+
+**Group**
+
+`Constraint Group` это группа элементов с одинаковой видимостью. Не стоит путать `Constraint Group` и `View Group`.
+
+При помощи `Group` можно удобно скрывать или показывать элементы одновременно, не перебирая все из них по очереди. Хоть `Group` и находится внутри файла разметки, визуально они никак не отображается на экране. 
+
+Для разметки выше группа будет выглядеть следующим образом:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/text_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_1" />
+
+    <TextView
+        android:id="@+id/text_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00ff00"
+        android:text="Text 3"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_2" />
+
+    <android.support.constraint.Group
+        constraint_referenced_ids="text_1,text_2,text_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</android.support.constraint.ConstraintLayout>
+```
