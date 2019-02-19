@@ -699,3 +699,161 @@ dependencies {
 
 </android.support.constraint.ConstraintLayout>
 ```
+
+## Guideline и Barrier
+
+**Guideline**
+
+`Guideline` это вспомогательная линия разметки. Она не имеет ширины и высоты, но относительно нее можно выравнивать другие элементы. `Guideline` всегда привязана только к сторонам родителя и может быть вертикальным или горизонтальным.
+
+Расположение `Guideline` контролируется следующими атрибутами:
+
+- `layout_constraintGuide_begin`. Для вертикальных `Guideline`- отступ от левой стороны родителя. Для горизонтальных - от верхней стороны;
+- `layout_constraintGuide_end`. Для вертикальных `Guideline`- отступ от правой стороны родителя. Для горизонтальных - от нижней стороны;
+- `layout_constraintGuide_percent`. Относительный отступ `Guideline` в процентах. Для вертикальных `Guideline` - от левой стороны. Для горизонтальных - от верхней стороны. Указывается числом от 0 до 1.
+
+Предположим, что нам нужно разместить элементы следующим образом:
+
+<img src="img/guidline.png" width="400px"/>
+
+Попробуем добавиться такого результата при помощи `Guideline`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.9" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line_4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.9" />
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:text="Text 1"
+        android:textSize="30sp"
+        app:layout_constraintStart_toStartOf="@+id/line_1"
+        app:layout_constraintTop_toTopOf="@+id/line_3" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toStartOf="@+id/line_2"
+        app:layout_constraintTop_toTopOf="@+id/line_3" />
+
+    <TextView
+        android:id="@+id/text_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00ff00"
+        android:text="Text 3"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/line_4"
+        app:layout_constraintStart_toStartOf="@+id/line_1" />
+
+    <TextView
+        android:id="@+id/text_4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#ffa500"
+        android:text="Text 4"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/line_4"
+        app:layout_constraintEnd_toStartOf="@+id/line_2" />
+
+</android.support.constraint.ConstraintLayout>
+```
+
+Мы получили искомый результат. Если бы линии разметки были видимы, то экран бы выглядел следующим образом:
+
+<img src="img/guidline_lines.png" width="400px"/>
+
+**Barrier**
+
+`Barrier` – это невидимый `View` который применяется для нескольких объектов изначально неизвестного размера – если один из них увеличивается, то `Barrier` подстроит размер остальных под наибольшую высоту или ширину. Барьеры могут быть вертикальными и горизонтальными.
+
+Предположим что у нас есть два `TextView` неизвестного размера, но мы хотим, что бы некий `ImageView` всегда был справа от них. Этого можно добиться следующим образом:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/text_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#FF0000"
+        android:text="Text 2"
+        android:textSize="30sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#00ff00"
+        android:text="Text long long "
+        android:textSize="30sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_1" />
+
+    <android.support.constraint.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:barrierDirection="right"
+        app:constraint_referenced_ids="text_1,text_2" />
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/cat"
+        app:layout_constraintStart_toEndOf="@+id/barrier" />
+
+</android.support.constraint.ConstraintLayout>
+```
+
+<img src="img/barrier_1.png" width="400px"/>
+
+Невидимая линия разметки проходит ровно справа самого длинного `TextView`:
+
+<img src="img/barrier_2.png" width="400px"/>
+
+<img src="img/barrier_3.png" width="400px"/>
