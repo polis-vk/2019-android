@@ -857,3 +857,12 @@ dependencies {
 <img src="img/barrier_2.png" width="400px"/>
 
 <img src="img/barrier_3.png" width="400px"/>
+
+
+## Другие возможности ConstraintLayout
+
+Библиотека `ConstraintLayout` переодически обновляется и добавляются все новые и новые возможности.
+
+<img src="img/new_in_constraint.gif" width="400px"/>
+
+Анимации, слои и прочие нововведения. За обновления удобнее всего следить на официальной [странице](https://androidstudio.googleblog.com/).
