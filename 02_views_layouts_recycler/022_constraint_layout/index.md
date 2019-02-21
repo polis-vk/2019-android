@@ -4,7 +4,7 @@ title: ConstraintLayout
 highlight: true
 ---
 
-В этом уроке мы научимся с самым мощным лейаутом - `ConstraintLayout`.
+В этом уроке мы научимся работать с самым мощным лейаутом - `ConstraintLayout`.
 
 ## Обзор
 
