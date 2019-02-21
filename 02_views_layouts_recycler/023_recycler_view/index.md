@@ -12,6 +12,9 @@ highlight: true
 
 <img src="img/recycling_of_views.png" width="1200px"/>
 
+
+## Использование RecyclerView
+
 Для того, что бы начать использовать `RecyclerView`, необходимо добавить зависимость в `build.gradle` файл:
 
 ```groovy
@@ -203,6 +206,90 @@ recyclerView.setLayoutManager(mLayoutManager);
 
 <img src="img/movies.png" width="400px"/>
 
-`LinearLayoutManager` это самой простой организации ячеек внутри списка. Вы можете менять менеджер по своему усмотрения, в зависимости от желаемого конечно вида вашего списка. Например, поменяв менеджер на `GridLayoutManager` можно добиться следующего отображения:
+`LinearLayoutManager` это самой простой способ организации ячеек внутри списка. Вы можете менять менеджер по своему усмотрения, в зависимости от желаемого конечно вида вашего списка. Например, поменяв менеджер на `GridLayoutManager` можно добиться следующего отображения:
 
 <img src="img/grid_manager.png" width="400px"/>
+
+Теперь давайте разберемся как добавлять элементы в список. Для этого создадим `FabButton`. Floating action button это круглая кнопка предназначенная для выполнения самого главного действия на этом экране.
+
+```xml
+   <android.support.design.widget.FloatingActionButton
+        android:id="@+id/activity_main__fb_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:tint="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@android:drawable/ic_input_add" />
+```
+
+## Действия с RecyclerView
+
+Что бы сделать какое-то действие по нажатию на кнопку, нужно добавить `OnClickListener`. Это интерфейс, который имеет единственный метод `onClick`, этот метод будет вызвал если пользователь нажимает на кнопку. Сделаем так, что бы по клику в наш список добавлялся новый фильм:
+
+```java
+    private void setupFabButton() {
+        FloatingActionButton fab = findViewById(R.id.activity_main__fb_add);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                movies.add(generateNewMovie());
+                movieAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+```
+
+<img src="img/add_new_movie.png" width="400px"/>
+
+А теперь давайте сделаем так, что бы наши ячейки были тоже кликабельными. Для этого добавим лисенер для строк списка. Пускай по клику на строку появится короткое сообщение с названием выбранного фильма:
+
+```java
+
+    private final Listener onMovieClickListener;
+
+    public MovieAdapter(List<Movie> movies, Listener onMovieClickListener) {
+        this.movies = movies;
+        this.onMovieClickListener = onMovieClickListener;
+    }
+
+    @NonNull
+    @Override
+    public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.movie_item, viewGroup, false);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onMovieClickListener.onMovieClick((Movie) v.getTag());
+            }
+        });
+        return new MovieViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull MovieViewHolder viewHolder, final int i) {
+        Movie movie = movies.get(i);
+        viewHolder.bind(movie);
+        viewHolder.itemView.setTag(movie);
+    }
+
+    interface Listener {
+
+        void onMovieClick(Movie movie);
+
+    }
+
+}
+```
+
+```java
+ movieAdapter = new MovieAdapter(movies, new MovieAdapter.Listener() {
+            @Override
+            public void onMovieClick(Movie movie) {
+                Toast.makeText(MainActivity.this, movie.name, Toast.LENGTH_SHORT).show();
+            }
+        });
+```
+
+<img src="img/toast.png" width="400px"/>
