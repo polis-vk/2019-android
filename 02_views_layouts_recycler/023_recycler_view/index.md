@@ -293,3 +293,5 @@ recyclerView.setLayoutManager(mLayoutManager);
 ```
 
 <img src="img/toast.png" width="400px"/>
+
+Простейший пример использования `RecyclerView` можно посмотреть [тут](https://github.com/otopba/polis-mail-ru-recyclerview-sample)
