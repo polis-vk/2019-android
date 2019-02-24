@@ -295,3 +295,8 @@ recyclerView.setLayoutManager(mLayoutManager);
 <img src="img/toast.png" width="400px"/>
 
 Простейший пример использования `RecyclerView` можно посмотреть [тут](https://github.com/otopba/polis-mail-ru-recyclerview-sample)
+
+## Что почитать
+
+- https://developer.android.com/guide/topics/ui/layout/recyclerview
+- https://google-developer-training.gitbooks.io/android-developer-fundamentals-course-concepts/content/en/Unit%202/44_c_recyclerview.html

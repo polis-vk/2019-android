@@ -866,3 +866,9 @@ dependencies {
 <img src="img/new_in_constraint.gif" width="400px"/>
 
 Анимации, слои и прочие нововведения. За обновления удобнее всего следить на официальной [странице](https://androidstudio.googleblog.com/).
+
+## Что почитать
+
+- https://developer.android.com/reference/android/support/constraint/ConstraintLayout
+- https://habr.com/ru/company/touchinstinct/blog/326814/
+- https://android.jlelse.eu/whats-new-in-constraint-layout-1-1-0-acfe30cfc7be

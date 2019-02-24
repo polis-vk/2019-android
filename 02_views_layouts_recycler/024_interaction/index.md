@@ -4,7 +4,7 @@ title: Обработка взаимодействия
 highlight: true
 ---
 
-В этом уроке мы разберемся какие события ввода есть в Android и как их использовать.
+В этом уроке мы познакомимся с основными событиями ввода в Android.
 
 ## Обзор
 
@@ -61,3 +61,10 @@ touchView.setOnTouchListener(new View.OnTouchListener() {
 ```
 
 Теперь в нашем логе появились новые события: `ACTION_MOVE` и `ACTION_UP`.
+
+
+## Что почитать
+
+- https://developer.android.com/guide/topics/ui/ui-events
+- https://developer.android.com/training/gestures/viewgroup
+- https://guides.codepath.com/android/gestures-and-touch-events
