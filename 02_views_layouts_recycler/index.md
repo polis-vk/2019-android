@@ -3,7 +3,7 @@ layout: default
 title: Курс Android разработки в Технополисе
 ---
 
-# Лекция №2 -- User Interface: Views, Layouts, RecyclerView
+# Лекция №2 -- Основы верстки
 
 - [Базовые элементы и свойства](./021_base_elements/)
 - [ConstraintLayout](./022_constraint_layout/)
