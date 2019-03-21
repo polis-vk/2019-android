@@ -221,7 +221,7 @@ View уже содержат в себе базовый набор `Property`:
 
 #### LayoutTransition
 
-``LayoutTransition`(флаг `animateLayoutChanges`) работает на основе `ValueAnimator`. Позволяет при изменениях внутри дочерних `View` анимировать родительский `View`.
+`LayoutTransition`(флаг `animateLayoutChanges`) работает на основе `ValueAnimator`. Позволяет при изменениях внутри дочерних `View` анимировать родительский `View`.
 
 Подходит для простых случаев:
 
