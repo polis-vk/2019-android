@@ -283,6 +283,7 @@ circle2.setVisibility(View.VISIBLE);
 
 <img src="img/spring.gif" width="400"/>
 
+Пример использования Dynamic Animation можно посмотреть [тут](https://github.com/otopba/polis-mail-ru-rv-swipe-sample)
 
 #### Прочие анимации
 
