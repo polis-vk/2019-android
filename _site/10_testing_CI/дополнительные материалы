@@ -1,0 +1,10 @@
+
+https://www.youtube.com/watch?v=pK7W5npkhho Test-Driven Development on Android with the Android Testing Support Library (Google I/O '17)
+https://startandroid.ru/ru/26-course/testing/480-urok-1-zachem-nuzhny-testy-i-kak-oni-rabotajut.html Введение в тестирование
+https://habr.com/ru/post/120101/ про JUnit вкратце
+https://github.com/mockito/mockito/wiki/How-to-write-good-tests - что стоит мокировать, а что нет.
+https://habr.com/ru/company/e-Legion/blog/320898/ - про Robolectric
+http://robolectric.blogspot.com/2011/01/how-to-create-your-own-shadow-classes.html - Shadow extension
+http://robolectric.org/extending/ - Shadow extension
+https://www.youtube.com/watch?v=isihPOY2vS4 - главные фишки Espresso
+https://jabknowsnothing.wordpress.com/ - о старте активити в тестах

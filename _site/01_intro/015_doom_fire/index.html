@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Приложение огонь! | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Приложение огонь!" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/01_intro/015_doom_fire/" />
+<meta property="og:url" content="http://localhost:4000/01_intro/015_doom_fire/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/01_intro/015_doom_fire/","headline":"Приложение огонь!","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В этом уроке мы немного поработаем с основами графики, и сделаем просто огненное приложение, которое будет выглядеть приблизительно так:</p>
+
+<p><img src="img/fire.gif" width="346px" /></p>
+
+<p>Это приложение воспроизводит эффект огня из игры Doom на Playstation, идея реализации подробно описана в <a href="http://fabiensanglard.net/doom_fire_psx/">статье Фабьена Санглара</a> (автора книги Game Engine Black Book: Doom). На Хабре есть <a href="https://habr.com/ru/post/435122/">перевод этой статьи на русский язык</a>.</p>
+
+<h2 id="рисование-на-экране">Рисование на экране</h2>
+
+<p>Прежде чем мы начнем писать огненный код, разберемся, как работать с графикой на Android.</p>
+
+<p>Как мы уже знаем, всё, что отображается на экране Android устройства – это View. В распоряжении разработчика есть набор  View из Android SDK для отображения стандартных компонентов интефейса: текста, кнопок, картинок… Если нужно нарисовать что-то нестандартное, то нужно это делать так же при помощи View, но этот View придется написать самим. За отрисовку на экране содержимого View отвечает метод <code class="highlighter-rouge">View.onDraw(Canvas canvas)</code>, который надо переопределить и добавить в него код, который нарисует то, что надо. Общий алгоритм действий для рисования чего-то при помощи View, следующий:</p>
+
+<ul>
+  <li>Создать свой класс, наследующий от View</li>
+  <li>Переопределить в нем метод <code class="highlighter-rouge">View.onDraw(Canvas canvas)</code></li>
+  <li>Написать код, который рисует то, что надо</li>
+  <li>Добавить созданный кастомный View в верстку, как любой другой View.</li>
+</ul>
+
+<p><em>Примечание: такие нестандартные View, написанные руками разработчиков, которые рисуют что-то необычное, и, вообще, ведут себя не так, как стандартные View из Android SDK, часто называются Custom View или кстомные View. Умение делать кастомные View часто упоминается в вакансиях и резюме Android разработчиков</em></p>
+
+<h2 id="canvas-и-paint">Canvas и Paint</h2>
+
+<p>Чтобы рисовать, нам понадобятся классы <code class="highlighter-rouge">android.graphics.Canvas</code> и <code class="highlighter-rouge">android.graphics.Paint</code>.</p>
+
+<p>Первый (Canvas) содержит методы вида <code class="highlighter-rouge">drawSomething</code> для рисования графических объектов и отвечает за отрисовку финального изображения. В метод <code class="highlighter-rouge">onDraw(Canvas canvas)</code> объект <code class="highlighter-rouge">Canvas</code> приходит в качестве аргумента – этот объект связан с отображением <code class="highlighter-rouge">View</code> на экране, и все вызовы на нём будут перобразованы в низкоуровневые команды графического процессора (Open GL), которые будут выполнены при формирования кадра в графической памяти перед отрисовкой на экране. Подробно о том, как устроена графическая подсистема Android, можно прочитать в статье <a href="https://source.android.com/devices/graphics/architecture">Graphics architecture</a>, но пока можно считать, что, вызывая методы <code class="highlighter-rouge">Canvas.drawSomething</code> мы просто рисуем внутри нашего View на экране.</p>
+
+<p>Класс <code class="highlighter-rouge">Paint</code> отвечает за то, <em>как</em> мы рисуем – каким цветом, стилем, какой толщины линиями и т.п. Мы сами создаем объект <code class="highlighter-rouge">Paint</code> в коде и используем его при необходимости.</p>
+
+<h2 id="примеры-рисования-на-canvas">Примеры рисования на Canvas</h2>
+
+<p>Для того, чтобы попрактиковаться с рисованием на Canvas, создайте новый проект Android приложения, а в нём класс <code class="highlighter-rouge">DemoDrawingView</code>, который наследует от <code class="highlighter-rouge">View</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class DemoDrawingView extends View {
+
+    public DemoDrawingView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+    }
+}
+</code></pre></div></div>
+
+<p>Конструктор с сигнатурой <code class="highlighter-rouge">&lt;init&gt;(Context, AttributeSet)</code> обязательно нужен для того, чтобы этот класс можно было использовать в верстке.</p>
+
+<p>Добавьте в проект одну основную активность, и используйте в ней следующую верстку (обратите внимание на имя пакета у DemoDrawingView):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> 
+    <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span> 
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+    
+    <span class="err">&lt;</span>ваше-имя-Java-пакета.DemoDrawingView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000"/&gt;
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p>Здесь мы используем атрибут <code class="highlighter-rouge">background</code> для задания цвета фона нашего View. Мы хотим, чтобы он был черным (на черном как-то удобнее рисовать), поэтому его значение равно <code class="highlighter-rouge">#000</code> – это сокращение от шестнадцатиричного <code class="highlighter-rouge">ff000000</code> (черный цвет в ARGB цветовой модели).</p>
+
+<p>В классе <code class="highlighter-rouge">DemoDrawingView</code> переопределите метод <code class="highlighter-rouge">onDraw(Canvas)</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Override
+    protected void onDraw(Canvas canvas) {
+        int width = getWidth();
+        int height = getHeight();
+
+        // Will draw in rect (0,0) - (width, height)
+        // Put your custom drawing code here
+    }
+</code></pre></div></div>
+
+<p>Сейчас в методе <code class="highlighter-rouge">onDraw</code> нет никакого кода, который что-то рисует, поэтому, если запустить сейчас приложение, то мы увидим просто черный экран – это пустой <code class="highlighter-rouge">DemoDrawingView</code> на черном фоне, занимающий весь экран.</p>
+
+<p>Рисование происходит в пространстве координат View и ограничено прямоугольной областью, которую занимает View. Левый верхний угол имеет координаты <code class="highlighter-rouge">(0.0)</code>, а правый нижний – <code class="highlighter-rouge">(width, height)</code>, где <code class="highlighter-rouge">width</code> и <code class="highlighter-rouge">height</code> это ширина и высота View, которые можно получить при помощи методов <code class="highlighter-rouge">getWidth()</code> и <code class="highlighter-rouge">getHeight()</code>.</p>
+
+<p>Для вызова некоторых методов отрисовки нам понадобится объект <code class="highlighter-rouge">Paint</code> для того, чтобы указывать цвет. Мы создадим один инстанс <code class="highlighter-rouge">Paint</code> и сохраним в поле класса <code class="highlighter-rouge">DemoDrawingView</code>, чтобы переиспользовать его в дальнейшем:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	private final Paint paint = new Paint();
+</code></pre></div></div>
+
+<p>Ниже будут приведены примеры кода, который надо встравить в метод <code class="highlighter-rouge">onDraw()</code> после комментария <em>Put your custom drawing code here</em>.</p>
+
+<h3 id="заливка-цветом">Заливка цветом</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	canvas.drawColor(Color.BLUE);
+</code></pre></div></div>
+
+<p><img src="img/0801_fill_color.png" /></p>
+
+<h3 id="прямоугольники">Прямоугольники</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    paint.setColor(Color.GREEN);
+    
+	final int size = 300;
+    for (int x = 0; x &lt; width; x += size) {
+        for (int y = 0; y &lt; height; y += size) {
+            paint.setColor(0x00ffffff &amp; (1257823419 * x + 2118746214 * y) | 0xff000000);
+            canvas.drawRect(x, y, x + size, y + size, paint);
+        }
+    }
+</code></pre></div></div>
+
+<p><img src="img/0802_rectangles.png" /></p>
+
+<h3 id="круги">Круги</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    int centerX = width / 2;
+    int centerY = height / 2;
+    int padding = 50;
+    int minSide = Math.min(width, height);
+    int contentSize = minSide - 2 * padding;
+    int overlap = 300;
+    int radius = (contentSize + overlap) / 4;
+    int dist = 2 * radius - overlap;
+
+    float x1 = centerX - dist / 2;
+    float x2 = centerX + dist / 2;
+    float x3 = centerX;
+
+    float d = dist / 2 / (float) Math.sqrt(3f);
+    float y1 = centerY + d;
+    float y2 = y1;
+    float y3 = centerY - 2 * d;
+
+    paint.setColor(Color.YELLOW &amp; 0x7fffffff);
+    canvas.drawCircle(x1, y1, radius, paint);
+    paint.setColor(Color.MAGENTA &amp; 0x7fffffff);
+    canvas.drawCircle(x2, y2, radius, paint);
+    paint.setColor(Color.BLUE &amp; 0x7fffffff);
+    canvas.drawCircle(x3, y3, radius, paint);
+</code></pre></div></div>
+
+<p><img src="img/0803_circles.png" /></p>
+
+<h3 id="произвольные-фигуры">Произвольные фигуры</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    int centerX = width / 2;
+    int centerY = height / 2;
+    int padding = 50;
+    int minSide = Math.min(width, height);
+    int contentSize = minSide - 2 * padding;
+
+    float segmentSize = contentSize / 3;
+
+    Path path = new Path();
+    path.moveTo(segmentSize, 0);
+    path.lineTo(2 * segmentSize, 0);
+    path.lineTo(2 * segmentSize, segmentSize);
+    path.lineTo(3 * segmentSize, segmentSize);
+    path.lineTo(3 * segmentSize, 3 * segmentSize);
+    path.lineTo(2 * segmentSize, 3 * segmentSize);
+    path.lineTo(2 * segmentSize, 2 * segmentSize);
+    path.lineTo(segmentSize, 2 * segmentSize);
+    path.lineTo(segmentSize, 3 * segmentSize);
+    path.lineTo(0, 3 * segmentSize);
+    path.lineTo(0, segmentSize);
+    path.lineTo(segmentSize, segmentSize);
+    path.lineTo(segmentSize, 0);
+
+    path.offset(centerX - 1.5f * segmentSize, centerY - 1.5f * segmentSize);
+
+    paint.setColor(Color.WHITE);
+    paint.setStyle(Paint.Style.STROKE);
+    paint.setStrokeCap(Paint.Cap.ROUND);
+    paint.setStrokeJoin(Paint.Join.ROUND);
+    paint.setStrokeWidth(20);
+
+    canvas.drawPath(path, paint);
+
+</code></pre></div></div>
+
+<p><img src="img/0804_bandersnatch.png" /></p>
+
+<p>Это далеко не исчерпывающий список того, что можно сделать при помощи <code class="highlighter-rouge">Canvas</code>, а непосредственно рисование – не единственный аспект имплементации кастомных View. Подробнее эта тема будет освещена в следующих лекциях, а пока рекомендую по мере необходимости смотреть в <a href="https://developer.android.com/reference/android/graphics/Canvas">документацию по Canvas</a> и искать методы, которые делают то, что нужно.</p>
+
+<h2 id="рекомендации-по-написанию-кода-ondraw">Рекомендации по написанию кода onDraw</h2>
+
+<p>Посмотрим внимательно на два последних примера (круги и фигура из фильма Брандашмыг): там непосредственно за отрисовку отвечают несколько строчек кода, в которых вызываются методы <code class="highlighter-rouge">Canvas.drawSomething</code>, а весь остальной код только вычисляет координаты для рисования и готовит объект <code class="highlighter-rouge">Paint</code>. Такая архитектура кода годится в случае, если мы рисуем один раз. А что если код рисования нужно выполнить несколько раз? Много раз в секунду? В таком случае код, вычисляющий координаты будет выполняться снова и снова, но результат будет один и тот же (потому что наша сцена статичная, а её размеры не меняются).</p>
+
+<p>Так в самом деле может происходить на Android – View могу перерисовываться до 60 раз в секунду (это частота обновления кадров в графической системе Android), и выполнять лишний код во время отрисовки не рекомендуется. Код из примеров выше можно изменить таким образом, что вспомогательный вычисления будут выполняться минимально необходимое число раз. Для этого нужно делать так:</p>
+
+<ol>
+  <li>
+    <p>Код, вычисляющий координаты, результат работы которого зависит только от размера View следует выполнять не в методе <code class="highlighter-rouge">onDraw</code>, а в методе <code class="highlighter-rouge">View.onSizeChanged</code> (<a href="https://developer.android.com/reference/android/view/View#onSizeChanged(int,%20int,%20int,%20int)">документация по onSizeChanged</a>, который вызывается каждый раз, когда размер View меняется. Он обязательно будет вызван как минимум один раз перед тем, как будет вызван <code class="highlighter-rouge">onDraw</code>.</p>
+  </li>
+  <li>
+    <p>Код, который вычисляет что-то постоянное, не зависящее ни от чего, можно выполнить в конструкторе. Например, инициализацию объекта <code class="highlighter-rouge">Paint</code> нужными параметрами.</p>
+  </li>
+</ol>
+
+<p>С таким подходом код последнего примера будет выглядеть так:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    private final Paint paint = new Paint();
+    private final Path path = new Path();
+
+    public DemoDrawingView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        paint.setColor(Color.WHITE);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStrokeWidth(20);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        int centerX = w / 2;
+        int centerY = h / 2;
+        int padding = 50;
+        int minSide = Math.min(w, h);
+        int contentSize = minSide - 2 * padding;
+
+        float segmentSize = contentSize / 3f;
+
+        path.reset();
+
+        path.moveTo(segmentSize, 0);
+        path.lineTo(2 * segmentSize, 0);
+        path.lineTo(2 * segmentSize, segmentSize);
+        path.lineTo(3 * segmentSize, segmentSize);
+        path.lineTo(3 * segmentSize, 3 * segmentSize);
+        path.lineTo(2 * segmentSize, 3 * segmentSize);
+        path.lineTo(2 * segmentSize, 2 * segmentSize);
+        path.lineTo(segmentSize, 2 * segmentSize);
+        path.lineTo(segmentSize, 3 * segmentSize);
+        path.lineTo(0, 3 * segmentSize);
+        path.lineTo(0, segmentSize);
+        path.lineTo(segmentSize, segmentSize);
+        path.lineTo(segmentSize, 0);
+
+        path.offset(centerX - 1.5f * segmentSize, centerY - 1.5f * segmentSize);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        canvas.drawPath(path, paint);
+    }
+</code></pre></div></div>
+
+<p>Этот код делает ровно то же самое с тем же видимым результатом, но написан он так, чтобы максимально быстро работать в условиях, когда Android отрисовывает экран нашего приложения 60 раз в секунду.</p>
+
+<p>В официальной документации есть специальная статья, в которой собраны общие рекомендации по написанию кода, который работает быстро на Android <a href="https://developer.android.com/training/articles/perf-tips">https://developer.android.com/training/articles/perf-tips</a>.</p>
+
+<h2 id="делаем-огонь">Делаем огонь</h2>
+
+<p>Огненное приложение будет устроено приблизительно так же, как демка, при помощи которой мы экспериментировали с рисованием на Canvas. Поэтому повторите основные шаги:</p>
+<ul>
+  <li>Создайте новый проект: можете назвать его FireDemoApp с packageId <code class="highlighter-rouge">ru.ok.technopolis.firedemoapp</code></li>
+  <li>Добавьте класс <code class="highlighter-rouge">MainActivity</code> и пропишите его в манифесте</li>
+  <li>Создайте класс View, в котором мы будем рисовать огонь: <code class="highlighter-rouge">FireView</code></li>
+  <li>Создайте верстку для <code class="highlighter-rouge">MainActivity</code>, в которой весь экран будет занимать <code class="highlighter-rouge">FireView</code>.</li>
+</ul>
+
+<p>Заготовка класса FireView должна выглядеть так:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public class FireView extends View {
+
+    public FireView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+
+    }
+}
+</code></pre></div></div>
+
+<p>Теперь напишем огненный код, руководствуясь <a href="http://fabiensanglard.net/doom_fire_psx/">оригинальной статьёй</a>, которую надо сейчас прочитать, если вы этого еще не сделали.</p>
+
+<p>Прежде всего нам понадобится палитра цветов для отрисовки пикселей огня с разной температурой. Определим её как массив с шестнадцатиричными значениями цветов в цветовой схеме ARGB:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    private static final int[] firePalette = {
+            0xff070707,
+            0xff1F0707,
+            0xff2F0F07,
+            0xff470F07,
+            0xff571707,
+            0xff671F07,
+            0xff771F07,
+            0xff8F2707,
+            0xff9F2F07,
+            0xffAF3F07,
+            0xffBF4707,
+            0xffC74707,
+            0xffDF4F07,
+            0xffDF5707,
+            0xffDF5707,
+            0xffD75F07,
+            0xffD75F07,
+            0xffD7670F,
+            0xffCF6F0F,
+            0xffCF770F,
+            0xffCF7F0F,
+            0xffCF8717,
+            0xffC78717,
+            0xffC78F17,
+            0xffC7971F,
+            0xffBF9F1F,
+            0xffBF9F1F,
+            0xffBFA727,
+            0xffBFA727,
+            0xffBFAF2F,
+            0xffB7AF2F,
+            0xffB7B72F,
+            0xffB7B737,
+            0xffCFCF6F,
+            0xffDFDF9F,
+            0xffEFEFC7,
+            0xffFFFFFF
+    };
+</code></pre></div></div>
+<p>В этой палитре цвета меняются от почти черного <code class="highlighter-rouge">0xff070707</code> по индексу 0 до белого <code class="highlighter-rouge">0xffFFFFFF</code> по индексу <code class="highlighter-rouge">firePalette.length - 1</code>.</p>
+
+<p>Для представления пикселей огня нам нужен двумерный массив, в котором мы будем хранить значение температуры пикселей от <code class="highlighter-rouge">0</code> до <code class="highlighter-rouge">firePalette.length - 1</code>, и размер этого массива должен совпадать с размером View, а значит, инициализировать его следует в методе <code class="highlighter-rouge">onSizeChanged</code>. Последняя строчка этого массива, которая соответствует нижней грани View, должна быть заполнена пикселями максимальной температуры, которые будут служить источниками огня.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	private int[][] firePixels;
+	private int fireWidth;
+	private int fireHeight;
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        fireWidth = w;
+        fireHeight = h;
+        firePixels = new int[fireWidth][fireHeight];
+
+        for (int x = 0; x &lt; fireWidth; x ++) {
+            firePixels[x][fireHeight - 1] = firePalette.length - 1;
+        }
+    }
+
+</code></pre></div></div>
+
+<p>В методе <code class="highlighter-rouge">onDraw</code> надо отрисовать пиксели огня, для этого напишем метод <code class="highlighter-rouge">drawFire</code>, который будет брать значения температуры всех пикселей из массива <code class="highlighter-rouge">firePixels</code> и отрисовывать их на <code class="highlighter-rouge">Canvas</code> при помощи палитры <code class="highlighter-rouge">firePixels</code>. Для этого нам понадобится еще объект <code class="highlighter-rouge">Paint</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	private final Paint paint = new Paint();
+
+	@Override
+    protected void onDraw(Canvas canvas) {
+        drawFire(canvas);
+    }
+
+    private void drawFire(Canvas canvas) {
+        for (int x = 0; x &lt; fireWidth; x++) {
+            for (int y = 0; y &lt; fireHeight; y++) {
+                int temperature = firePixels[x][y];
+                if (temperature &lt; 0) {
+                    temperature = 0;
+                }
+                if (temperature &gt;= firePalette.length) {
+                    temperature = firePalette.length - 1;
+                }
+                @ColorInt int color = firePalette[temperature];
+                paint.setColor(color);
+
+                canvas.drawPoint(x, y, paint);
+            }
+        }
+    }
+</code></pre></div></div>
+
+<p>Здесь мы обходим весь массив пикселей, и для каждого пикселя берем его температуру и, на всякий случай проверив выход за границы массива, используем температуру в качестве индекса в палитре. После чего используем метод <code class="highlighter-rouge">Canvas.drawPoint</code> для отрисовки одного пикселя нужного цвета.</p>
+
+<p>Попробуйте запустить этот код. При запуске на эмуляторе мы видим белый экран вместо ожидаемого черного экрана с белой полосой огненных пикселей внизу. Почему? В каком месте кода мы допустили ошибку?</p>
+
+<p>На самом деле, в логике кода нет ошибки. Проблема в том, что мы используем неподходящие для нашей задачи методы. Мы рисуем пиксели в цикле при помощи метода <code class="highlighter-rouge">Canvas.drawPoint</code>. Количество пикселей зависит от экрана устройстов, но можно приблизительно считать его равным одному миллиону. А вот метод <code class="highlighter-rouge">Canvas.drawPoint</code>, как и вызов любого другого метода <code class="highlighter-rouge">Canvas.drawSomething</code> при рисовании на экране, устроен так, что в момент вызова ничего фактические не рисуется, а формируется Open GL команда на отрисовку. Потом, после того, как <code class="highlighter-rouge">onDraw</code> отработал, все команды для отрисовки одного кадра собираются вместе и отправляются в графический процессор, где они фактически выполняются. Отрисовать за раз миллион пикселей дял современного Android устройства не проблема, а вот выполнить миллион команд на отрисовку одного пикслеля – это непосильная задача.</p>
+
+<p>Белый экран, который мы видим при старте приложения с таким кодом – это просто белый фон окна, а реальная отрисовка <code class="highlighter-rouge">FireView</code> еще не произошла. Пока мы смотрим на это белое окно, графический процессор пытается переварить миллион Open GL команд, и это может длиться довольно долго (На моём смартфоне с Adreno 630 GPU <code class="highlighter-rouge">FireView</code> отрисовывается за 20 секунд).</p>
+
+<p>Количество отдельных Open GL команд, которые GPU может выполнить за один кадр, не очень велико, и при написании кода в <code class="highlighter-rouge">onDraw</code> надо стараться оптимизировать их количество. Поэтому сейчас мы изменим код так, что он вместо миллиона раз по одному пикселю будет отрисовывать миллион пикселей за раз. С точки зрения логики, результат тот же, но работать будет гораздо быстрее.</p>
+
+<h2 id="отрисовка-в-bitmap">Отрисовка в Bitmap</h2>
+
+<p>Никто, на самом деле, не рисует пиксели при помощи <code class="highlighter-rouge">Canvas.drawPoint</code> – мы сделали это исключительно в демонстрационных целях. Обычный способ отрисовки большого количества пикселей – это работа с битмапом, то есть с растровым изображением, массивом пикселей, который хранится в памяти. Мы разобьем отрисовку на два этапа:</p>
+<ol>
+  <li>Сначала установим значения всех пикселей в битмапе</li>
+  <li>Потом нарисуем этот битмап при помощи метода <code class="highlighter-rouge">Canvas.drawBitmap</code></li>
+</ol>
+
+<p>Таким образом, GPU должен будет выполнить всего одну операцию отрисовки битмапа, а он умеет делать это очень хорошо и быстро.</p>
+
+<p>Битмапы в Android представлены классом <code class="highlighter-rouge">android.graphics.Bitmap</code>. Мы создадим один инстанс <code class="highlighter-rouge">Bitmap</code> и будем его переиспользовать при отрисовке. Добавьте поле в класс <code class="highlighter-rouge">FireView</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private Bitmap bitmap;
+</code></pre></div></div>
+
+<p>А в метод <code class="highlighter-rouge">onSizeChanged</code> добавьте код, который создаст битмап нужного размера при изменении размеров View:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bitmap = Bitmap.createBitmap(fireWidth, fireHeight, Bitmap.Config.RGB_565);
+</code></pre></div></div>
+
+<p>В методе <code class="highlighter-rouge">drawFire</code> замените две строчки, которые рисовали пиксели в Canvas (и из-за которых были все тормоза):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>paint.setColor(color);
+canvas.drawPoint(x, y, paint);
+</code></pre></div></div>
+<p>на одну строчку, которая установит цвет пикселя в битмапе:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bitmap.setPixel(x, y, color);
+</code></pre></div></div>
+<p>А в конце метода после цикла по всем пикселям добавьте одну строчку для отрисовки битмапа в Canvas:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>canvas.drawBitmap(bitmap, 0, 0, paint);
+</code></pre></div></div>
+<p>Если теперь запустить приложение, то вместо белого экрана вы увидите черный экран с белой полосой внизу, которая соответствует последней строчке в массиве пикселей – эти пиксели имеют максимальную температуру и поэтому, в соответствии с нашей палитрой, отрисовываются белым цветом.</p>
+
+<p><img src="img/0805_fire_0.png" width="400px" /></p>
+
+<h2 id="распространение-огня">Распространение огня</h2>
+
+<p>Теперь, когда основа “движка” для отрисовки огня готова, осталось только написать код, который воспроизводит распространение огня вверх, как это описано в оригинальной статье. Для этого создадим новый метод <code class="highlighter-rouge">spreadFire</code>, который будем вызывать из <code class="highlighter-rouge">onDraw</code> перед отрисовкой:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Override
+protected void onDraw(Canvas canvas) {
+    spreadFire();
+    drawFire(canvas);
+}
+
+private void spreadFire() {
+	// TODO: здесь будет алгоритм распространения огня
+}
+</code></pre></div></div>
+
+<p>В алгоритме распространения огня используются случайные числа, поэтому нам понадобится инстанс <code class="highlighter-rouge">java.util.Random</code>, который мы сохраним в поле класса <code class="highlighter-rouge">FireView</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private final Random random = new Random();
+</code></pre></div></div>
+
+<p>Алгоритм распространения симулирует распространение частиц огня от источника вверх, при этом в движение частиц добавляется элемент случайности, а их температура постоянно уменьшается. Алгоритм в процессе формирования очередного кадра работает следующим образом:</p>
+<ul>
+  <li>Обход всех пикселей огня производится построчно сверху вниз (чтобы менять значения температуры пикселей в порядке, обратном причинному)</li>
+  <li>Для каждого пикселя огня находится его пиксель-прообраз из предыдущего кадра, который находится ниже. При этом добавляеются небольшие случайные отклонения по вертикали и горизонтали.</li>
+  <li>Температура пикселя вычисляется как температура его прообраза минус небольшая случайная величина.</li>
+</ul>
+
+<p>Вот код этого алгоримя (который надо написать внутри метода <code class="highlighter-rouge">spreadFire</code>):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    for (int y = 0; y &lt; fireHeight - 1; y++) {
+        for (int x = 0; x &lt; fireWidth; x++) {
+            int rand_x = random.nextInt(3);
+            int rand_y = random.nextInt(6);
+            int dst_x = Math.min(fireWidth - 1, Math.max(0, x + rand_x - 1));
+            int dst_y = Math.min(fireHeight - 1, y + rand_y);
+            int deltaFire = -(rand_x &amp; 1);
+            firePixels[x][y] = Math.max(0, firePixels[dst_x][dst_y] + deltaFire);
+        }
+    }
+</code></pre></div></div>
+
+<h2 id="обновление-кадров">Обновление кадров</h2>
+
+<p>Мы написали код, который для каждого кадра выполняет алгоритм распространения огня и отрисовывает обновленное состояние на экране. Если мы его сейчас запустим, то увидим только один первый кадр огня: небольшой эффект над нижней полосой источника огня. Android отрисовывает наш <code class="highlighter-rouge">FireView</code> и считает, что всё ок – работа выполнена. Нам нужно сделать так, чтобы Android перерисовывал <code class="highlighter-rouge">FireView</code> снова и снова в бесконечном цикле – тогда мы увидим последовательность смены кадров с горящим огнем. Сделать это очень просто – надо добавить одну строчку в метод <code class="highlighter-rouge">onDraw</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Override
+protected void onDraw(Canvas canvas) {
+    spreadFire();
+    drawFire(canvas);
+    invalidate();
+}
+</code></pre></div></div>
+
+<p>Это вызов метода <code class="highlighter-rouge">View.invalidate()</code> – этот метод говорит системе, что состояние View изменилось таким образом, что его надо перерисовать. И система вскоре перерисует <code class="highlighter-rouge">View</code> – снова вызовет его метод <code class="highlighter-rouge">onDraw</code> (это происходит асинхронным образом).</p>
+
+<p>Мы вызываем <code class="highlighter-rouge">invalidate</code> прямо из самого метода <code class="highlighter-rouge">onDraw</code>, поэтому система будет бесконечно снова и снова вызывать <code class="highlighter-rouge">onDraw</code> и перерисовывать <code class="highlighter-rouge">FireView</code>.</p>
+
+<p>Запустив приложение, мы увидим горящий огонь, который выглядит именно так, как мы задумывали, за исключением одного небольшого нюанса – он горит очень медленно:</p>
+
+<p><img src="img/slow_fire.gif" /></p>
+
+<p>На изображении выше добавлен счетчик FPS – он показывает приблизительно полкадра в секунду (или 1 кадр за 2 секунды). Причем, скорость работы приложения не сильно зависит от мощности CPU или GPU: на разных устройствах FPS будет отличаться, но не в разы. Это следствие эмпирического правила в мире Android устройств: <em>скорость работы железа приблизительно пропорциональна рамеру экрана</em> – то есть на более мощном устройстве, где наш код мог бы работать быстрее, размер экрана будет пропорционально больше, и нам надо будет за один кадр вычислить и перерисовать больше пикселей – как следствие, визуально скорость работы не будет сильно отличаться.</p>
+
+<h2 id="оптимизации">Оптимизации</h2>
+
+<h3 id="убираем-лишние-вызовы-из-цикла">Убираем лишние вызовы из цикла</h3>
+
+<p>Для того, чтобы ускорить наш огонь, сделаем оптимизацию в методе <code class="highlighter-rouge">drawFire</code> – там мы в цикле обходим все пиксели и вызываем <code class="highlighter-rouge">Bitmap.setPixel</code>. Вместо этого мы будем сохранять пиксели в массив, а потом одним разом передадим его в <code class="highlighter-rouge">Bitmap.setPixels</code>, который вместо одного пикселя принимает в качестве параметров массив пикселей. Таким образом мы сэкономим на том, что при выполнении кода виртуальная машина не будет миллион раз выполнять инструкцию <code class="highlighter-rouge">invoke-virtual</code> для вызова метода <code class="highlighter-rouge">Bitmap.setPixel</code> в цикле, а вместо этого будет выполнять инструкцию <code class="highlighter-rouge">aput</code> для записи значения в массив, что гораздо быстрее.</p>
+
+<p>Для этой оптимизации нам придется завести еще одно поле в классе <code class="highlighter-rouge">FireView</code> для массива пикселей (вообще, довольно часто оказывается, что за лучшее быстродействие приходится расплачиваться памятью):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private int[] bitmapPixels;
+</code></pre></div></div>
+
+<p>В методе <code class="highlighter-rouge">drawFire</code> замените вызов <code class="highlighter-rouge">setPixel</code> на запись в массив, а после завершения цикла добавьте вызов <code class="highlighter-rouge">setPixels</code> для того, чтобы записать массив пикселей в битмап. А перед началом цикла добавьте код, который аллоцирует массив при необходимости:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private void drawFire(Canvas canvas) {
+    final int pixelCount = fireWidth * fireHeight;
+    if (bitmapPixels == null || bitmapPixels.length &lt; pixelCount ) {
+        bitmapPixels = new int[pixelCount];
+    }
+
+    for (int x = 0; x &lt; fireWidth; x++) {
+        for (int y = 0; y &lt; fireHeight; y++) {
+            int temperature = firePixels[x][y];
+            if (temperature &lt; 0) {
+                temperature = 0;
+            }
+            if (temperature &gt;= firePalette.length) {
+                temperature = firePalette.length - 1;
+            }
+            @ColorInt int color = firePalette[temperature];
+            bitmapPixels[fireWidth * y + x] = color;
+        }
+    }
+    bitmap.setPixels(bitmapPixels, 0, fireWidth, 0, 0, fireWidth, fireHeight);
+    canvas.drawBitmap(bitmap, 0, 0, paint);
+}
+</code></pre></div></div>
+
+<p>Запустив приложение, видим ускорение приблизительно в 3 раза (FPS ~1.7 вместо 0.5 на Samsung J3 2016):</p>
+
+<p><img src="img/medium_fire.gif" /></p>
+
+<h3 id="одномерный-массив-вместо-двумерного">Одномерный массив вместо двумерного</h3>
+
+<p>Заметили в предыдущей оптимизации, что <code class="highlighter-rouge">Bitmap.setPixels</code> принимает в качестве аргумента одномерный массив, а не двумерный, хотя по сути битмап является двумерным? Наверное, это неспроста, подумали вы – и вы правы! Обращение к элементам многомерных массивов, как правило, связано с дополнительным накладными расходами, поэтому по возомжности следует их избегать. А у нас как раз есть двумерный массив <code class="highlighter-rouge">firePixels</code>, в котором мы храним температуры частиц огня. Давайте сделаем его одномерным.</p>
+
+<p>Для этого замените его декларацию на одномерный вариант:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>private int[] firePixels;
+</code></pre></div></div>
+
+<p>и код аллоцирования также на одномерный вариант:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>firePixels = new int[fireWidth * fireHeight];
+</code></pre></div></div>
+
+<p>а во всех местах, где происходит обращение к элементам массива по координатам <code class="highlighter-rouge">foo, bar</code>, замените <code class="highlighter-rouge">firePixels[foo][bar]</code> на <code class="highlighter-rouge">firePixels[foo + bar * fireWidth]</code>. Таким образом, пиксели внутри одномерного массива <code class="highlighter-rouge">firePixels</code> будут храниться построчно: сначала идут все пиксели первой строчки, потом все пиксели второй строчки и т.д. – это традиционный способ адресации пикселей в одномерных массивах.</p>
+
+<p>Вот так теперь должен выглядеть метод <code class="highlighter-rouge">spreadFire</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>for (int y = 0; y &lt; fireHeight - 1; y++) {
+    for (int x = 0; x &lt; fireWidth; x++) {
+        int rand_x = random.nextInt(3);
+        int rand_y = random.nextInt(6);
+        int dst_x = Math.min(fireWidth - 1, Math.max(0, x + rand_x - 1));
+        int dst_y = Math.min(fireHeight - 1, y + rand_y);
+        int deltaFire = -(rand_x &amp; 1);
+        firePixels[x + y * fireWidth] = Math.max(0, firePixels[dst_x + dst_y * fireWidth] + deltaFire);
+    }
+}
+</code></pre></div></div>
+
+<p>Запустив приложение, видим ускорение еще почти в 2 раза (FPS ~3 вместо предыдущих 1.7):</p>
+
+<p><img src="img/fast_fire.gif" /></p>
+
+<h3 id="меньше-пикселей--быстрее">Меньше пикселей – быстрее</h3>
+
+<p>Такие тонкие оптимизации, как использование более быстрых методов или замена многомерных массивов на одномерные, иногда работают, иногда – не работают (то есть дают несущественный прирост производительности). Но есть один простой метод, который работает в большинстве случаев, когда речь идет об отрисовке – чем меньше вы рисуете, тем быстрее это работает.</p>
+
+<p>В нашем случае ощутимого ускорения можно достичь, уменьшив количество пикселей огня, которые мы обсчитываем и отрисовываем на каждом кадре. Сейчас количество пикселей огня совпадает с количеством пикселей экрана. Например, на средненьком экране 720x1280 – это 921600 штук. Если мы уменьшим ширину огня до 150 пикселей, то при сохранении соотношения сторон, весь массив пикселей будет иметь размер 150x266, или около 40000 пикселей  – более чем в 20 раз меньше.</p>
+
+<p>В методе <code class="highlighter-rouge">onSizeChanged</code>, где мы инициализируем массив огня и присваиваем переменным <code class="highlighter-rouge">fireWidth</code> и <code class="highlighter-rouge">fireHeight</code> значения, равные ширине и высоте View, напишем такой код:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>float aspectRatio = (float) w / h;
+fireWidth = 150;
+fireHeight = (int) (fireWidth / aspectRatio);
+</code></pre></div></div>
+
+<p>Теперь огонь горит быстрее, но его размер уменьшился раз в 5 (вполен ожидаемо для экрана шириной 720 пикселей и ширины огня 150 пикселей):</p>
+
+<p><img src="img/small_fire.gif" /></p>
+
+<p>Для того, чтобы огонь принял прежние размеры на весь экран, мы в методе <code class="highlighter-rouge">drawFire</code> вызовыем метод <code class="highlighter-rouge">Canvas.scale</code> для того, чтобы размер отрисованного битмапа увеличился ровно на столько, на сколько надо для заполнения всей ширины View. Этот вызов надо добавить перед <code class="highlighter-rouge">drawBitmap</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>float scale = (float) getWidth() / fireWidth;
+canvas.scale(scale, scale);
+canvas.drawBitmap(bitmap, 0, 0, paint);
+</code></pre></div></div>
+
+<p>Результат:
+<img src="img/faster_fire.gif" /></p>
+
+<p>Заметьте – растягивние битмапа на весь экран при помощи <code class="highlighter-rouge">Canvas.scale</code> не повлияло на скорость работы приложения (FPS ~30). Так происходит, потому что <code class="highlighter-rouge">Canvas.scale</code> реализован на уровне Open GL как растягивание текстуры, а GPU очень хорошо умеет растягивать текстуры. С точки зрения скорости отрисовки имеет значение количество оригинальных пикселей текстуры (битмапа).</p>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

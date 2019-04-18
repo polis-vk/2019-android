@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Базовые элементы и свойства | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Базовые элементы и свойства" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/02_views_layouts_recycler/021_base_elements/" />
+<meta property="og:url" content="http://localhost:4000/02_views_layouts_recycler/021_base_elements/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/02_views_layouts_recycler/021_base_elements/","headline":"Базовые элементы и свойства","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В этом уроке мы познакомимся с основными UI элементами Android. Научимся располагать элементы и сверстаем свой первый экран.</p>
+
+<h2 id="view">View</h2>
+
+<p><code class="highlighter-rouge">View</code> это класс, который представляет собой базовый элемент UI. <code class="highlighter-rouge">View</code> занимает прямоугольную область экрана и отвечает за отрисовку этой области и обработку событий. Все визуальные компоненты наследуются от <code class="highlighter-rouge">View</code>.</p>
+
+<p>Как думаете, сколько различных <code class="highlighter-rouge">View</code> находится на этом экране?</p>
+
+<p><img src="img/tamtam_login_page.png" width="400px" /></p>
+
+<p>На экране присутствуют 7 различных <code class="highlighter-rouge">View</code>:</p>
+<ol>
+  <li>кнопка “ОК”;</li>
+  <li>кнопка “RU”;</li>
+  <li>логотип ТамТам;</li>
+  <li>текст “Общение без границ”;</li>
+  <li>кнопка “Войти через телефон”;</li>
+  <li>кнопка “Войти через Google”;</li>
+  <li>условия использования.</li>
+</ol>
+
+<p><img src="img/tamtam_login_page_views.png" width="400px" /></p>
+
+<h2 id="объявление-ui">Объявление UI</h2>
+
+<p>Существует два способа объявления UI в Android:</p>
+<ol>
+  <li>при помощи XML;</li>
+  <li>при помощи кода.</li>
+</ol>
+
+<p>При помощи XML можно быстро и просто создавать UI своего приложения. Для этого необходимо создать новый файл с расширением <code class="highlighter-rouge">.xml</code> в каталоге <code class="highlighter-rouge">res/layout/</code>. Например, такой:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p>Для использования этого ресурса, вам необходимо загрузить его в коде приложения. Для <code class="highlighter-rouge">Activity</code> это метод <code class="highlighter-rouge">onCreate()</code>. Например, если ваш файл называется <code class="highlighter-rouge">example.xml</code>, загрузить его можно следующим способом:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+    <span class="n">setContentView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">example</span><span class="o">);</span>
+<span class="o">}</span> 
+</code></pre></div></div>
+
+<p>Этот же макет можно было создать при помощи кода следующим образом:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">FrameLayout</span> <span class="n">frameLayout</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FrameLayout</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="n">TextView</span> <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+        <span class="n">textView</span><span class="o">.</span><span class="na">setLayoutParams</span><span class="o">(</span><span class="k">new</span> <span class="n">FrameLayout</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">(</span><span class="n">FrameLayout</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">,</span> <span class="n">FrameLayout</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">WRAP_CONTENT</span><span class="o">));</span>
+        <span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="s">"Hello World"</span><span class="o">);</span>
+        <span class="n">frameLayout</span><span class="o">.</span><span class="na">addView</span><span class="o">(</span><span class="n">textView</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="n">frameLayout</span><span class="o">);</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="атрибуты-xml">Атрибуты xml</h2>
+
+<p>Каждый объект <code class="highlighter-rouge">View</code> поддерживает атрибуты XML. Некоторые атрибуты характерны только для конкретного типа <code class="highlighter-rouge">View</code> (например, объект <code class="highlighter-rouge">TextView</code> поддерживает атрибут <code class="highlighter-rouge">textSize</code>), однако эти атрибуты также наследуются любыми объектами <code class="highlighter-rouge">View</code>, которые могут наследовать этот класс. Некоторые атрибуты являются общими для всех объектов <code class="highlighter-rouge">View,</code> поскольку они наследуются от корневого класса <code class="highlighter-rouge">View</code> (такие как атрибут <code class="highlighter-rouge">id</code>)</p>
+
+<p><strong>Атрибут id</strong></p>
+
+<p>У любого объекта <code class="highlighter-rouge">View</code> может быть связанный с ним целочисленный идентификатор, который служит для обозначения уникальности объекта <code class="highlighter-rouge">View</code> в иерархии. Во время компиляции приложения этот идентификатор используется как целое число, однако идентификатор обычно назначается в файле XML макета в виде строки в атрибуте <code class="highlighter-rouge">id</code>.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>android:id="@+id/my_button"
+</code></pre></div></div>
+
+<p>Символ <code class="highlighter-rouge">@</code> в начале строки указывает на то, что обработчику XML следует выполнить синтаксический анализ остальной части идентификатора и определить ее в качестве ресурса идентификатора. Символ плюса (+) обозначает, что это имя нового ресурса, который необходимо создать и добавить к нашим ресурсам (в файле <code class="highlighter-rouge">R.java</code>).</p>
+
+<p><strong>Атрибуты layout_width, layout_height</strong></p>
+
+<p>Все <code class="highlighter-rouge">View</code> имеют атрибуты ширины и высоты <code class="highlighter-rouge">layout_width</code> и <code class="highlighter-rouge">layout_height</code>, они могут принимать следующие значения:</p>
+
+<ol>
+  <li><code class="highlighter-rouge">wrap_content</code>. Размер представления задается по размерам его содержимого.</li>
+</ol>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:background=</span><span class="s">"#FF0000"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/wrap_content.png" width="400px" /></p>
+
+<ol>
+  <li><code class="highlighter-rouge">match_parent</code>. Размер представления определяется размером его родителя.</li>
+</ol>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+        <span class="na">android:background=</span><span class="s">"#FF0000"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/match_parent.png" width="400px" /></p>
+
+<ol>
+  <li>Абсолютное значение. Размер строго фиксирован. Как правило, не рекомендуется задавать абсолютные значения.</li>
+</ol>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"50dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"300dp"</span>
+        <span class="na">android:background=</span><span class="s">"#FF0000"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/absolute_size.png" width="400px" /></p>
+
+<p>В примерах выше мы использовали атрибуты <code class="highlighter-rouge">background</code> и <code class="highlighter-rouge">textSize</code> для определения цвета фона и размера текста.</p>
+
+<p>Для определения фиксированного значения мы использовали единицы измерения <code class="highlighter-rouge">dp</code>. Density-independent Pixels - это единица измерения учитывающая размер экрана. Различные экраны имеют различное количество пикселей на экране.</p>
+
+<p><img src="img/px.png" width="12000px" /></p>
+
+<p><code class="highlighter-rouge">dp</code> можно определить, как масштабируемый <code class="highlighter-rouge">px</code>. За степень масштабируемости отвечает <code class="highlighter-rouge">Screen Density</code>. Это коэффициент, который использует система для вычисления значения <code class="highlighter-rouge">dp</code>:</p>
+<ul>
+  <li>low (ldpi) = 0.75;</li>
+  <li>medium (mdpi) = 1;</li>
+  <li>tv (tvdpi) = 1.33;</li>
+  <li>high (hdpi) = 1.5;</li>
+  <li>extra high (xhdpi) = 2.</li>
+</ul>
+
+<p><img src="img/dp.png" width="1200px" /></p>
+
+<p>Т.е. когда экран имеет режим <code class="highlighter-rouge">mdpi</code>, <code class="highlighter-rouge">1dp = 1px</code>. View шириной <code class="highlighter-rouge">100dp</code> будет выглядеть также как и View шириной <code class="highlighter-rouge">100px</code>.</p>
+
+<p>Если, например, у нас экран с низким разрешением, то используется режим <code class="highlighter-rouge">ldpi</code>. В этом случае <code class="highlighter-rouge">1dp = 0.75px</code>. View шириной <code class="highlighter-rouge">100dp</code> будет выглядеть так же как View шириной <code class="highlighter-rouge">75px</code>.</p>
+
+<p>Для шрифтов используется <code class="highlighter-rouge">sp</code> - Scale-independent Pixels. Работает аналогично <code class="highlighter-rouge">dp</code>, но для шрифтов.</p>
+
+<h2 id="imageview">ImageView</h2>
+
+<p><code class="highlighter-rouge">ImageView</code> - это компонент, который предназначен для отображения изображений. Для того, что бы установить изображение, необходимо задать значение аргументу <code class="highlighter-rouge">src</code>.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/cat_regular.png" width="400px" /></p>
+
+<p>Для того, что бы управлять масштабированием изображения внутри ImageView, существует атрибут <code class="highlighter-rouge">scaleType</code>, меняя его значения можно добиться следующих результатов:</p>
+
+<ul>
+  <li>centerCrop</li>
+</ul>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/cat_center_crop.png" width="400px" /></p>
+
+<ul>
+  <li>center</li>
+</ul>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+        <span class="na">android:scaleType=</span><span class="s">"center"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/cat_center.png" width="400px" /></p>
+
+<h2 id="viewgroup">ViewGroup</h2>
+
+<p>С отображением компонентов по отдельности мы разобрались, давайте теперь разберемся с тем, как отобразить несколько <code class="highlighter-rouge">View</code> на экране.</p>
+
+<p><code class="highlighter-rouge">ViewGroup</code> это наследник класса <code class="highlighter-rouge">View</code>, который может хранить в себе другие компоненты. 
+Базовый <code class="highlighter-rouge">ViewGroup</code> называется (root). Для компонентов, которые он хранит в себе он называется родителем (parent) а компоненты по отношению к нему - потомки (child).</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/view_group.png" width="400px" /></p>
+
+<p>В данном примере <code class="highlighter-rouge">FrameLayout</code> является базовым элементом, для него <code class="highlighter-rouge">TextView</code> и <code class="highlighter-rouge">ImageView</code> являются потомками, а он для них является родителем.</p>
+
+<p>Мы использовали <code class="highlighter-rouge">FrameLayout</code> для того, что бы отобразить две <code class="highlighter-rouge">View</code> на одном экране. <code class="highlighter-rouge">FrameLayout</code> это самый простой способ разметки, в нем объекты накладываются друг на друга. Положением объектов можно управлять только при помощи атрибута <code class="highlighter-rouge">gravity</code>.</p>
+
+<h2 id="linearlayout">LinearLayout</h2>
+
+<p><code class="highlighter-rouge">LinearLayout</code> это более сложный <code class="highlighter-rouge">ViewGroup</code>, который выстраивает элементы друг за другом.
+Он может быть вертикальным и горизонтальным. За направление отображения отвечает атрибут <code class="highlighter-rouge">orientation</code>.</p>
+
+<ol>
+  <li>Вертикальный <code class="highlighter-rouge">LinearLayout</code></li>
+</ol>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;LinearLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+    <span class="na">android:orientation=</span><span class="s">"vertical"</span><span class="nt">&gt;</span>
+    
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/LinearLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/linear_layout_vertical.png" width="400px" /></p>
+
+<ol>
+  <li>Горизонтальный <code class="highlighter-rouge">LinearLayout</code></li>
+</ol>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;LinearLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+    <span class="na">android:orientation=</span><span class="s">"horizontal"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/LinearLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/linear_layout_horizontal.png" width="400px" /></p>
+
+<p>Для управления местом, занимаемым каждым элементом, используется атрибут <code class="highlighter-rouge">layout_weight</code>. Этот атрибут указывает “значимость” элемента. Чем больше значение, тем более высокий приоритет при будет отдам элементу, при расчетах размера <code class="highlighter-rouge">View</code>.</p>
+
+<p>Равный вес для всех элементов:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;LinearLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+    <span class="na">android:orientation=</span><span class="s">"horizontal"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"1.0"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"1.0"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"1.0"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/LinearLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/cat_equal_weight.png" width="400px" /></p>
+
+<p>Почему изображение все равно занимает больше места? Из-за того что у нас стоит <code class="highlighter-rouge">layout_width="wrap_content"</code> <code class="highlighter-rouge">TextView</code> может ужиматься. Для того что бы недопустить этого, нужно установить ширину равную <code class="highlighter-rouge">0dp</code>. Такое значение указывает, что элементу стоит занимать все свободное место что ему доступно.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;LinearLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+    <span class="na">android:orientation=</span><span class="s">"horizontal"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"1.0"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"1.0"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"1.0"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/LinearLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/cat_0dp.png" width="400px" /></p>
+
+<p>Установим изображению приоритет в 5 раз меньше чем для текстовых полей:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;LinearLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+    <span class="na">android:orientation=</span><span class="s">"horizontal"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"10.0"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"2.0"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"10.0"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/LinearLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/cat_5_weight.png" width="400px" /></p>
+
+<p>Для более удобного управления можно использовать атрибут <code class="highlighter-rouge">weightSum</code>. Если установить его равным 100, то можно присваивать веса в процентном соотношении.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;LinearLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+    <span class="na">android:orientation=</span><span class="s">"horizontal"</span>
+    <span class="na">android:weightSum=</span><span class="s">"100"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"25"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"50"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_weight=</span><span class="s">"25"</span>
+        <span class="na">android:text=</span><span class="s">"Hello World!"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/LinearLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/cat_100_weight.png" width="400px" /></p>
+
+<h2 id="relativelayout">RelativeLayout</h2>
+
+<p>Что если нам необходимо расположить элементы и по вертикали и по горизонтали? Для этого можно использовать несколько <code class="highlighter-rouge">LinerLayout</code> с разной ориентаций, но это не всегда удобно и не очень оптимально. Для более сложных интерфейсов используется <code class="highlighter-rouge">RelativeLayout</code>
+<code class="highlighter-rouge">RelativeLayout</code> позволяет расставить элементы относительно друг друга.</p>
+
+<p>Для того, чтобы разместить компонент относительно родителя используются следующие атрибуты:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">layout_alignParentBottom</code> - выравнивание относительно нижнего края родителя;</li>
+  <li><code class="highlighter-rouge">layout_alignParentLeft</code> - выравнивание относительно левого края родителя;</li>
+  <li><code class="highlighter-rouge">layout_alignParentRight</code> - выравнивание относительно правого края родителя;</li>
+  <li><code class="highlighter-rouge">layout_alignParentTop</code> - выравнивание относительно верхнего края родителя;</li>
+  <li><code class="highlighter-rouge">layout_centerInParent</code> - выравнивание по центру родителя по вертикали и горизонтали;</li>
+  <li><code class="highlighter-rouge">layout_centerHorizontal</code> - выравнивание по центру родителя по горизонтали;</li>
+  <li><code class="highlighter-rouge">layout_centerVertical</code> - выравнивание по центру родителя по вертикали.</li>
+</ul>
+
+<p>Для того, чтобы разместить компонент относительно другого компонента используются следующие атрибуты:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">layout_above</code> - размещается над указанным компонентом;</li>
+  <li><code class="highlighter-rouge">layout_below</code> - размещается под указанным компонентом;</li>
+  <li><code class="highlighter-rouge">layout_alignLeft</code> - выравнивается по левому краю указанного компонента;</li>
+  <li><code class="highlighter-rouge">layout_alignRight</code> - выравнивается по правому краю указанного компонента;</li>
+  <li><code class="highlighter-rouge">layout_alignTop</code> - выравнивается по верхнему краю указанного компонента;</li>
+  <li><code class="highlighter-rouge">layout_alignBottom</code> - выравнивается по нижнему краю указанного компонента;</li>
+  <li><code class="highlighter-rouge">layout_toLeftOf</code> - правый край компонента размещается слева от указанного компонента;</li>
+  <li><code class="highlighter-rouge">layout_toRightOf</code> - левый край компонент размещается справа от указанного компонента.</li>
+</ul>
+
+<p>Разместим два <code class="highlighter-rouge">TextView</code> вверху родителя и внизу родителя:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_alignParentBottom=</span><span class="s">"true"</span>
+        <span class="na">android:text=</span><span class="s">"First TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_alignParentTop=</span><span class="s">"true"</span>
+        <span class="na">android:text=</span><span class="s">"Second TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/RelativeLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/relative_top_bottom.png" width="400px" /></p>
+
+<p>Атрибуты можно комбинировать. Разместим второй <code class="highlighter-rouge">TextView</code> относительно правого нижнего угла первого <code class="highlighter-rouge">TextView</code>:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/first_view"</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_alignParentTop=</span><span class="s">"true"</span>
+        <span class="na">android:text=</span><span class="s">"First TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_below=</span><span class="s">"@+id/first_view"</span>
+        <span class="na">android:layout_toRightOf=</span><span class="s">"@+id/first_view"</span>
+        <span class="na">android:text=</span><span class="s">"Second TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/RelativeLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/relative_down_right.png" width="400px" /></p>
+
+<p>В примере выше мы добавили <code class="highlighter-rouge">id</code> для верхнего <code class="highlighter-rouge">TextView</code>, для того, чтобы можно было указать отношение.</p>
+
+<h2 id="padding-vs-margin">Padding vs Margin</h2>
+
+<p>Мы научились располагать элементы относительно друг друга, но как сделать так, чтобы они не “слипались. 
+Для этого существую два атрибута: <code class="highlighter-rouge">padding</code> и <code class="highlighter-rouge">layout_margin</code>.</p>
+
+<p><code class="highlighter-rouge">padding</code> указывает отступ внутри элемента.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/first_view"</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_centerInParent=</span><span class="s">"true"</span>
+        <span class="na">android:background=</span><span class="s">"#FF0000"</span>
+        <span class="na">android:text=</span><span class="s">"First TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span>
+        <span class="na">android:padding=</span><span class="s">"100dp"</span><span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/RelativeLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/padding.png" width="400px" /></p>
+
+<p><code class="highlighter-rouge">layout_margin</code> указывает отступ вокруг элемента.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/first_view"</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_centerInParent=</span><span class="s">"true"</span>
+        <span class="na">android:background=</span><span class="s">"#FF0000"</span>
+        <span class="na">android:text=</span><span class="s">"First TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span>
+        <span class="na">android:layout_margin=</span><span class="s">"100dp"</span><span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/RelativeLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/margin.png" width="400px" /></p>
+
+<p>Отступы можно указывать по отдельности для каждой из сторон. Разместим ImageView и рядом два TextView друг под другом:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;RelativeLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/image_view"</span>
+        <span class="na">android:layout_width=</span><span class="s">"200dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"200dp"</span>
+        <span class="na">android:layout_alignParentLeft=</span><span class="s">"true"</span>
+        <span class="na">android:layout_alignParentTop=</span><span class="s">"true"</span>
+        <span class="na">android:layout_marginLeft=</span><span class="s">"20dp"</span>
+        <span class="na">android:layout_marginTop=</span><span class="s">"20dp"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">android:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/title_view"</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_alignTop=</span><span class="s">"@+id/image_view"</span>
+        <span class="na">android:layout_marginBottom=</span><span class="s">"20dp"</span>
+        <span class="na">android:layout_toRightOf=</span><span class="s">"@+id/image_view"</span>
+        <span class="na">android:background=</span><span class="s">"#FF0000"</span>
+        <span class="na">android:text=</span><span class="s">"Title"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/subtitle_view"</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_below=</span><span class="s">"@+id/title_view"</span>
+        <span class="na">android:layout_toRightOf=</span><span class="s">"@+id/image_view"</span>
+        <span class="na">android:background=</span><span class="s">"#FFFF00"</span>
+        <span class="na">android:text=</span><span class="s">"SubTitle"</span>
+        <span class="na">android:textSize=</span><span class="s">"30sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/RelativeLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/top_bottom_margin.png" width="400px" /></p>
+
+<h2 id="gravity-vs-layout_gravity">Gravity vs layout_gravity</h2>
+
+<p>При помощи атрибута <code class="highlighter-rouge">gravity</code> можно управлять положением контента внутри элемента. Например, разместить текст в нижней части <code class="highlighter-rouge">TextView</code>.</p>
+
+<p>Атрибут <code class="highlighter-rouge">layout_gravity</code> позволяет указать положение самого View внутри родителя.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span>
+    <span class="na">android:gravity=</span><span class="s">"bottom"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"300dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"200dp"</span>
+        <span class="na">android:background=</span><span class="s">"#FF0000"</span>
+        <span class="na">android:gravity=</span><span class="s">"bottom|right"</span>
+        <span class="na">android:text=</span><span class="s">"First TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:layout_width=</span><span class="s">"300dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"200dp"</span>
+        <span class="na">android:layout_gravity=</span><span class="s">"bottom"</span>
+        <span class="na">android:background=</span><span class="s">"#FFFF00"</span>
+        <span class="na">android:gravity=</span><span class="s">"top"</span>
+        <span class="na">android:text=</span><span class="s">"Second TextView"</span>
+        <span class="na">android:textSize=</span><span class="s">"40sp"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p><img src="img/gravity.png" width="400px" /></p>
+
+<p>Для того, что бы разместить текст в нижнем правом углу первого <code class="highlighter-rouge">TextView</code> мы скомбинировали значение <code class="highlighter-rouge">bottom</code> и <code class="highlighter-rouge">right</code>.</p>
+
+<h2 id="что-почитать">Что почитать</h2>
+
+<ul>
+  <li>https://developer.android.com/guide/topics/ui/declaring-layout</li>
+  <li>https://proandroiddev.com/android-developer-beginner-faq-1-margin-vs-padding-f5403c81d7e6</li>
+  <li>https://developers.google.com/training/android/</li>
+</ul>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

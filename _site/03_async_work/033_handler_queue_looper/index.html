@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>MessageQueue, Looper, Handler | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="MessageQueue, Looper, Handler" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/03_async_work/033_handler_queue_looper/" />
+<meta property="og:url" content="http://localhost:4000/03_async_work/033_handler_queue_looper/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/03_async_work/033_handler_queue_looper/","headline":"MessageQueue, Looper, Handler","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В этом уроке мы узнаем, что такое MessageQueue, Looper и Handler.</p>
+
+<h2 id="messagequeue">MessageQueue</h2>
+
+<p>В качестве реализации очереди сообщений Android предлагает использовать класс [MessageQueue] (https://developer.android.com/reference/android/os/MessageQueue.html). Это низкоуровневый <code class="highlighter-rouge">интерфейс</code>, который, в большинстве случаев, напрямую не используется в приложении.</p>
+
+<p><code class="highlighter-rouge">MessageQueue</code> оперирует экземплярами класса [Message] (https://developer.android.com/reference/android/os/Message.html).</p>
+
+<p>К экземпляру класса <code class="highlighter-rouge">Message</code> можно добавить <code class="highlighter-rouge">payload</code>: данные любого типа или объект типа [Runnable] (https://developer.android.com/reference/java/lang/Runnable.html):</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="kd">final</span> <span class="n">Message</span> <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="na">obtain</span><span class="o">();</span>
+    <span class="c1">//Добавляем строку к сообщению</span>
+    <span class="n">message</span><span class="o">.</span><span class="na">obj</span> <span class="o">=</span> <span class="s">"Payload"</span><span class="o">;</span>
+
+    <span class="o">...</span>
+</code></pre></div></div>
+
+<p>Поскольку для экземпляров класса <code class="highlighter-rouge">Message</code> Android автоматически создаёт <code class="highlighter-rouge">pool</code> (реализованный прямо в классе <code class="highlighter-rouge">Message</code>), то для их инстанцирования рекомендуется использовать группу статических методов [Message.obtain(…)] (https://developer.android.com/reference/android/os/Message.html#obtain()) вместо явного создания:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="c1">//Не рекомендуется</span>
+    <span class="kd">final</span> <span class="n">Message</span> <span class="n">message</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Message</span><span class="o">();</span>
+
+    <span class="o">...</span>
+</code></pre></div></div>
+
+<h2 id="looper">Looper</h2>
+
+<p>Класс [Looper] (https://developer.android.com/reference/android/os/Looper.html) представляет собой бесконечный цикл выборки сообщений, выполняющийся в потоке ([Thread] (https://developer.android.com/reference/java/lang/Thread.html)), к которому он добавлен.</p>
+
+<p>По умолчанию, поток не имеет цикла выборки сообщений.</p>
+
+<p>В качестве хранилища сообщений <code class="highlighter-rouge">Looper</code> использует экземпляр класса <code class="highlighter-rouge">MessageQueue</code>.</p>
+
+<p><code class="highlighter-rouge">Looper</code> отвечает за доставкау (диспетчеризацию) сообщений из <code class="highlighter-rouge">MessageQueue</code> своим получателям.</p>
+
+<p>Класс <code class="highlighter-rouge">Looper</code> имеет три основных метода:</p>
+
+<ul>
+  <li>статический метод [Looper.prepare()] (https://developer.android.com/reference/android/os/Looper.html#prepare()), который ==создаёт цикл выборки сообщений== и, собственно, ==добавлет его к потоку==, в котором этот метод вызывается</li>
+  <li>блокирующий метод [Looper.loop()] (https://developer.android.com/reference/android/os/Looper.html#loop()), который ==стартует== цикл выборки сообщений (собственно в котором и осуществляется их ==диспетчеризация==)</li>
+  <li>и, наконец, метод [Looper.quit()] (https://developer.android.com/reference/android/os/Looper.html#quit()), который ==завершает== (прерывает) выполнение метода [Looper.loop()] (https://developer.android.com/reference/android/os/Looper.html#loop()).</li>
+</ul>
+
+<p>К потоку можно добавить не более одного цикла выборки сообщений (попытка добавить ещё один приведёт к возникновению исключительной ситуации).</p>
+
+<p><code class="highlighter-rouge">Looper</code>, в подавляющем большинстве случаев, не используется для прямого доступа к своей <code class="highlighter-rouge">MessageQueue</code>, хотя такая возможность есть.</p>
+
+<p>Ещё один полезный метод, предоставляемый классом <code class="highlighter-rouge">Looper</code> - <a href="https://developer.android.com/reference/android/os/Looper.html#getThread()">Looper.getThread()</a>. Метод вернёт поток, к кторому <code class="highlighter-rouge">Looper</code> был добавлен или <code class="highlighter-rouge">null</code>.</p>
+
+<h2 id="handler">Handler</h2>
+
+<p>Класс [Handler] (https://developer.android.com/reference/android/os/Handler.html) предназначен для отправки сообщений (<code class="highlighter-rouge">Message</code>) и объектов типа <code class="highlighter-rouge">Runnable</code> для обработки в потоке, к которому добавлен <code class="highlighter-rouge">Looper</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="kd">public</span> <span class="n">Looper</span> <span class="nf">getHandlerLooper</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// return a looper that's already been added to the thread</span>
+    <span class="o">}</span>
+
+    <span class="kd">final</span> <span class="n">Looper</span> <span class="n">looper</span> <span class="o">=</span> <span class="n">getHandlerLooper</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="n">Handler</span> <span class="n">handler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Handler</span><span class="o">(</span><span class="n">looper</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Этот метод будет выполнен в потоке, к которому добавлен looper</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handleMessage</span><span class="o">(</span><span class="n">Message</span> <span class="n">msg</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// handle incoming message</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+
+    <span class="o">...</span>    
+</code></pre></div></div>
+
+<p>Или создаём <code class="highlighter-rouge">Handler</code>, кторый будет обрабатывать сообщения в главном (<code class="highlighter-rouge">UI</code>) потоке:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="kd">final</span> <span class="n">Looper</span> <span class="n">looper</span> <span class="o">=</span> <span class="n">Looper</span><span class="o">.</span><span class="na">getMainLooper</span><span class="o">();</span>
+    <span class="kd">final</span> <span class="n">Handler</span> <span class="n">handler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Handler</span><span class="o">(</span><span class="n">looper</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Этот метод будет выполнен в главном потоке</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handleMessage</span><span class="o">(</span><span class="n">Message</span> <span class="n">msg</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// handle incoming message</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+
+    <span class="o">...</span>
+</code></pre></div></div>
+
+<p>Или создаём <code class="highlighter-rouge">Handler</code>, кторый будет обрабатывать сообщения в текущем потоке (т.е. в потоке, в котором создаётся <code class="highlighter-rouge">Handler</code>):</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="c1">// Используется неявный вызов метода Looper.myLooper()</span>
+    <span class="kd">final</span> <span class="n">Handler</span> <span class="n">handler</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Handler</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// Этот метод будет выполнен в потоке, в котором создан handler</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">handleMessage</span><span class="o">(</span><span class="n">Message</span> <span class="n">msg</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// handle incoming message</span>
+        <span class="o">}</span>
+    <span class="o">};</span>
+
+    <span class="o">...</span>
+</code></pre></div></div>
+
+<p>==Попытка создать Handler без цикла выборки сообщений недопустима==.
+Другими словами, при создании экземпляра класса <code class="highlighter-rouge">Handler</code> ему необходимо укзать <code class="highlighter-rouge">Looper</code> (явно или неявно), который был добавлен к потоку.</p>
+
+<p>Отправляем сообщение:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="kd">final</span> <span class="n">Message</span> <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="na">obtain</span><span class="o">();</span>
+    <span class="c1">// Указываем уникальный идентификатор сообщения</span>
+    <span class="n">message</span><span class="o">.</span><span class="na">what</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="c1">// Добавляем строку к сообщению</span>
+    <span class="n">message</span><span class="o">.</span><span class="na">obj</span> <span class="o">=</span> <span class="s">"Payload"</span><span class="o">;</span>
+
+    <span class="c1">// handler - получатель</span>
+    <span class="n">handler</span><span class="o">.</span><span class="na">sendMessage</span><span class="o">(</span><span class="n">message</span><span class="o">);</span>
+
+    <span class="o">...</span>    
+</code></pre></div></div>
+
+<p>Упрощаем <code class="highlighter-rouge">создание</code> и отправку сообщения:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="c1">// handler - получатель - он же target</span>
+    <span class="n">handler</span><span class="o">.</span><span class="na">obtainMessage</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="s">"Payload"</span><span class="o">).</span><span class="na">sendToTarget</span><span class="o">();</span>
+
+    <span class="o">...</span>    
+</code></pre></div></div>
+
+<p>Отправляем <code class="highlighter-rouge">Runnable</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span>
+
+    <span class="c1">// handler - получатель</span>
+    <span class="c1">// Неявно создаётся Message, к которому добавляется указанный Runnable</span>
+    <span class="n">handler</span><span class="o">.</span><span class="na">post</span><span class="o">(</span>
+        <span class="k">new</span> <span class="nf">Runnable</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+                <span class="c1">// do something</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+
+    <span class="o">...</span>    
+</code></pre></div></div>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

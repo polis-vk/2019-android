@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>RecyclerView | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="RecyclerView" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/02_views_layouts_recycler/023_recycler_view/" />
+<meta property="og:url" content="http://localhost:4000/02_views_layouts_recycler/023_recycler_view/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/02_views_layouts_recycler/023_recycler_view/","headline":"RecyclerView","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В этом уроке мы научимся создавать и отображать списки элементов при помощи <code class="highlighter-rouge">RecyclerView</code>.</p>
+
+<h2 id="обзор">Обзор</h2>
+
+<p><code class="highlighter-rouge">RecyclerView</code> - это <code class="highlighter-rouge">View</code> которое может отображать множество элементов в виде списка. Может прокручиваться для просмотра элементов не вошедших на один экран. Ячейки списка ушедшие за пределы экрана переиспользуются для отображения следующих элементов.</p>
+
+<p><img src="img/recycling_of_views.png" width="1200px" /></p>
+
+<h2 id="использование-recyclerview">Использование RecyclerView</h2>
+
+<p>Для того, что бы начать использовать <code class="highlighter-rouge">RecyclerView</code>, необходимо добавить зависимость в <code class="highlighter-rouge">build.gradle</code> файл:</p>
+
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dependencies</span> <span class="o">{</span>
+<span class="o">...</span>
+    <span class="n">compile</span> <span class="s1">'com.android.support:recyclerview-v7:28.0.0'</span>
+<span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Добавим компонент <code class="highlighter-rouge">RecyclerView</code> в наш макет:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;android.support.v7.widget.RecyclerView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/activity_main__rv_movies"</span>
+        <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+        <span class="na">android:layout_height=</span><span class="s">"match_parent"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p>Запустив проект с такой версткой мы увидим пустой белый экран.
+Попробуем отобразить какие-то данные в нашем списке.</p>
+
+<p>Предположим, что мы хотим сделаем приложение-список фильмов. Для начала создадим класс <code class="highlighter-rouge">Movie</code>, который будет содержать краткую информацию о конкретном фильме.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Movie</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">description</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">poster</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Movie</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="n">String</span> <span class="n">description</span><span class="o">,</span> <span class="kt">int</span> <span class="n">poster</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">description</span> <span class="o">=</span> <span class="n">description</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">poster</span> <span class="o">=</span> <span class="n">poster</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Сущность фильма имеет: имя, описание, изображение. Поле <code class="highlighter-rouge">poster</code> имеет тип <code class="highlighter-rouge">int</code> потому что картинка будет взята из ресурсов приложения.</p>
+
+<p>Как будет выглядеть ячейка с нашим фильмом? Давайте сверстаем новый макет: нам необходимо расположить два <code class="highlighter-rouge">TextView</code> и один <code class="highlighter-rouge">ImageView</code>.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">&lt;</span><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;android.support.constraint.ConstraintLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">xmlns:app=</span><span class="s">"http://schemas.android.com/apk/res-auto"</span>
+    <span class="na">xmlns:tools=</span><span class="s">"http://schemas.android.com/tools"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;ImageView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/movie_item__iv_poster"</span>
+        <span class="na">android:layout_width=</span><span class="s">"100dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"100dp"</span>
+        <span class="na">android:layout_margin=</span><span class="s">"10dp"</span>
+        <span class="na">android:scaleType=</span><span class="s">"centerCrop"</span>
+        <span class="na">app:layout_constraintBottom_toBottomOf=</span><span class="s">"parent"</span>
+        <span class="na">app:layout_constraintStart_toStartOf=</span><span class="s">"parent"</span>
+        <span class="na">app:layout_constraintTop_toTopOf=</span><span class="s">"parent"</span>
+        <span class="na">tools:src=</span><span class="s">"@drawable/cat"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/movie_item__tv_name"</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:ellipsize=</span><span class="s">"end"</span>
+        <span class="na">android:fontFamily=</span><span class="s">"sans-serif-medium"</span>
+        <span class="na">android:maxLines=</span><span class="s">"2"</span>
+        <span class="na">android:paddingStart=</span><span class="s">"10dp"</span>
+        <span class="na">android:paddingLeft=</span><span class="s">"10dp"</span>
+        <span class="na">android:paddingEnd=</span><span class="s">"10dp"</span>
+        <span class="na">android:paddingRight=</span><span class="s">"10dp"</span>
+        <span class="na">android:textSize=</span><span class="s">"20sp"</span>
+        <span class="na">app:layout_constraintBottom_toTopOf=</span><span class="s">"@+id/movie_item__tv_description"</span>
+        <span class="na">app:layout_constraintEnd_toEndOf=</span><span class="s">"parent"</span>
+        <span class="na">app:layout_constraintStart_toEndOf=</span><span class="s">"@+id/movie_item__iv_poster"</span>
+        <span class="na">app:layout_constraintTop_toTopOf=</span><span class="s">"parent"</span>
+        <span class="na">app:layout_constraintVertical_chainStyle=</span><span class="s">"packed"</span>
+        <span class="na">tools:text=</span><span class="s">"Movie name"</span> <span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;TextView</span>
+        <span class="na">android:id=</span><span class="s">"@+id/movie_item__tv_description"</span>
+        <span class="na">android:layout_width=</span><span class="s">"0dp"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:ellipsize=</span><span class="s">"end"</span>
+        <span class="na">android:maxLines=</span><span class="s">"4"</span>
+        <span class="na">android:paddingStart=</span><span class="s">"10dp"</span>
+        <span class="na">android:paddingLeft=</span><span class="s">"10dp"</span>
+        <span class="na">android:paddingEnd=</span><span class="s">"10dp"</span>
+        <span class="na">android:paddingRight=</span><span class="s">"10dp"</span>
+        <span class="na">android:textSize=</span><span class="s">"10sp"</span>
+        <span class="na">app:layout_constraintBottom_toBottomOf=</span><span class="s">"parent"</span>
+        <span class="na">app:layout_constraintEnd_toEndOf=</span><span class="s">"parent"</span>
+        <span class="na">app:layout_constraintStart_toEndOf=</span><span class="s">"@+id/movie_item__iv_poster"</span>
+        <span class="na">app:layout_constraintTop_toBottomOf=</span><span class="s">"@+id/movie_item__tv_name"</span>
+        <span class="na">tools:text=</span><span class="s">"Movie description"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/android.support.constraint.ConstraintLayout&gt;</span>
+</code></pre></div></div>
+
+<p>Для того что бы сообщить RecyclerView какие данные следует отображать, используется Adapter. Адаптер соединяет данные с представлением. Адаптер, который используется в RecyclerView, должен наследоваться от абстрактного класса RecyclerView.Adapter. Этот класс определяет три метода:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">onCreateViewHolder</code>: возвращает объект <code class="highlighter-rouge">ViewHolder</code>, который будет хранить данные по одному объекту Movie;</li>
+  <li><code class="highlighter-rouge">onBindViewHolder</code>: выполняет привязку объекта <code class="highlighter-rouge">ViewHolder</code> к объекту Phone по определенной позиции;</li>
+  <li><code class="highlighter-rouge">getItemCount</code>: возвращает количество объектов в списке.</li>
+</ul>
+
+<p>Выше мы упомянули <code class="highlighter-rouge">ViewHolder</code>. <code class="highlighter-rouge">ViewHolder</code> - это класс, объекты которого, хранят необходимую информацию для отрисовки ячеек списка.</p>
+
+<p>Попробуем написать адаптер для списка фильмов:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MovieAdapter</span> <span class="kd">extends</span> <span class="n">RecyclerView</span><span class="o">.</span><span class="na">Adapter</span><span class="o">&lt;</span><span class="n">MovieAdapter</span><span class="o">.</span><span class="na">MovieViewHolder</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Movie</span><span class="o">&gt;</span> <span class="n">movies</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">MovieAdapter</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Movie</span><span class="o">&gt;</span> <span class="n">movies</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">movies</span> <span class="o">=</span> <span class="n">movies</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@NonNull</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">MovieViewHolder</span> <span class="nf">onCreateViewHolder</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">ViewGroup</span> <span class="n">viewGroup</span><span class="o">,</span> <span class="kt">int</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">View</span> <span class="n">view</span> <span class="o">=</span> <span class="n">LayoutInflater</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">viewGroup</span><span class="o">.</span><span class="na">getContext</span><span class="o">()).</span><span class="na">inflate</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">movie_item</span><span class="o">,</span> <span class="n">viewGroup</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">MovieViewHolder</span><span class="o">(</span><span class="n">view</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onBindViewHolder</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">MovieViewHolder</span> <span class="n">viewHolder</span><span class="o">,</span> <span class="kt">int</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">viewHolder</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="n">movies</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getItemCount</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">movies</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">MovieViewHolder</span> <span class="kd">extends</span> <span class="n">RecyclerView</span><span class="o">.</span><span class="na">ViewHolder</span> <span class="o">{</span>
+
+        <span class="kd">private</span> <span class="kd">final</span> <span class="n">TextView</span> <span class="n">nameTextView</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="kd">final</span> <span class="n">TextView</span> <span class="n">descriptionTextView</span><span class="o">;</span>
+        <span class="kd">private</span> <span class="kd">final</span> <span class="n">ImageView</span> <span class="n">posterImageView</span><span class="o">;</span>
+
+        <span class="kd">public</span> <span class="nf">MovieViewHolder</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">View</span> <span class="n">itemView</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">super</span><span class="o">(</span><span class="n">itemView</span><span class="o">);</span>
+            <span class="n">nameTextView</span> <span class="o">=</span> <span class="n">itemView</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">movie_item__tv_name</span><span class="o">);</span>
+            <span class="n">descriptionTextView</span> <span class="o">=</span> <span class="n">itemView</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">movie_item__tv_description</span><span class="o">);</span>
+            <span class="n">posterImageView</span> <span class="o">=</span> <span class="n">itemView</span><span class="o">.</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">movie_item__iv_poster</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="kd">private</span> <span class="kt">void</span> <span class="nf">bind</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">Movie</span> <span class="n">movie</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">nameTextView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">movie</span><span class="o">.</span><span class="na">name</span><span class="o">);</span>
+            <span class="n">descriptionTextView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">movie</span><span class="o">.</span><span class="na">description</span><span class="o">);</span>
+            <span class="n">posterImageView</span><span class="o">.</span><span class="na">setImageResource</span><span class="o">(</span><span class="n">movie</span><span class="o">.</span><span class="na">poster</span><span class="o">);</span>
+        <span class="o">}</span>
+
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Теперь свяжем адаптер со списком:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+        <span class="n">setContentView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">activity_main</span><span class="o">);</span>
+        <span class="n">RecyclerView</span> <span class="n">recyclerView</span> <span class="o">=</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">activity_main__rv_movies</span><span class="o">);</span>
+        <span class="n">MovieAdapter</span> <span class="n">movieAdapter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MovieAdapter</span><span class="o">(</span><span class="n">generateMovieList</span><span class="o">());</span>
+        <span class="n">recyclerView</span><span class="o">.</span><span class="na">setAdapter</span><span class="o">(</span><span class="n">movieAdapter</span><span class="o">);</span>
+    <span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>Запустив приложение, мы снова увидим белый экран. Почему? Нужно подсказать <code class="highlighter-rouge">RecyclerView</code> как располагать элементы. Для этого вызовем метод <code class="highlighter-rouge">setLayoutManager</code> и выставим <code class="highlighter-rouge">LinearLayoutManager</code>.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">LinearLayoutManager</span> <span class="n">mLayoutManager</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LinearLayoutManager</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="n">recyclerView</span><span class="o">.</span><span class="na">setLayoutManager</span><span class="o">(</span><span class="n">mLayoutManager</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p><img src="img/movies.png" width="400px" /></p>
+
+<p><code class="highlighter-rouge">LinearLayoutManager</code> это самой простой способ организации ячеек внутри списка. Вы можете менять менеджер по своему усмотрения, в зависимости от желаемого конечно вида вашего списка. Например, поменяв менеджер на <code class="highlighter-rouge">GridLayoutManager</code> можно добиться следующего отображения:</p>
+
+<p><img src="img/grid_manager.png" width="400px" /></p>
+
+<p>Теперь давайте разберемся как добавлять элементы в список. Для этого создадим <code class="highlighter-rouge">FabButton</code>. Floating action button это круглая кнопка предназначенная для выполнения самого главного действия на этом экране.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="nt">&lt;android.support.design.widget.FloatingActionButton</span>
+        <span class="na">android:id=</span><span class="s">"@+id/activity_main__fb_add"</span>
+        <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+        <span class="na">android:layout_margin=</span><span class="s">"20dp"</span>
+        <span class="na">android:tint=</span><span class="s">"@android:color/white"</span>
+        <span class="na">app:layout_constraintBottom_toBottomOf=</span><span class="s">"parent"</span>
+        <span class="na">app:layout_constraintEnd_toEndOf=</span><span class="s">"parent"</span>
+        <span class="na">app:srcCompat=</span><span class="s">"@android:drawable/ic_input_add"</span> <span class="nt">/&gt;</span>
+</code></pre></div></div>
+
+<h2 id="действия-с-recyclerview">Действия с RecyclerView</h2>
+
+<p>Что бы сделать какое-то действие по нажатию на кнопку, нужно добавить <code class="highlighter-rouge">OnClickListener</code>. Это интерфейс, который имеет единственный метод <code class="highlighter-rouge">onClick</code>, этот метод будет вызвал если пользователь нажимает на кнопку. Сделаем так, что бы по клику в наш список добавлялся новый фильм:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">setupFabButton</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">FloatingActionButton</span> <span class="n">fab</span> <span class="o">=</span> <span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">activity_main__fb_add</span><span class="o">);</span>
+        <span class="n">fab</span><span class="o">.</span><span class="na">setOnClickListener</span><span class="o">(</span><span class="k">new</span> <span class="n">View</span><span class="o">.</span><span class="na">OnClickListener</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onClick</span><span class="o">(</span><span class="n">View</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">movies</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">generateNewMovie</span><span class="o">());</span>
+                <span class="n">movieAdapter</span><span class="o">.</span><span class="na">notifyDataSetChanged</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p><img src="img/add_new_movie.png" width="400px" /></p>
+
+<p>А теперь давайте сделаем так, что бы наши ячейки были тоже кликабельными. Для этого добавим лисенер для строк списка. Пускай по клику на строку появится короткое сообщение с названием выбранного фильма:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Listener</span> <span class="n">onMovieClickListener</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">MovieAdapter</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Movie</span><span class="o">&gt;</span> <span class="n">movies</span><span class="o">,</span> <span class="n">Listener</span> <span class="n">onMovieClickListener</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">movies</span> <span class="o">=</span> <span class="n">movies</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">onMovieClickListener</span> <span class="o">=</span> <span class="n">onMovieClickListener</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@NonNull</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">MovieViewHolder</span> <span class="nf">onCreateViewHolder</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">ViewGroup</span> <span class="n">viewGroup</span><span class="o">,</span> <span class="kt">int</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">View</span> <span class="n">view</span> <span class="o">=</span> <span class="n">LayoutInflater</span><span class="o">.</span><span class="na">from</span><span class="o">(</span><span class="n">viewGroup</span><span class="o">.</span><span class="na">getContext</span><span class="o">()).</span><span class="na">inflate</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">movie_item</span><span class="o">,</span> <span class="n">viewGroup</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+        <span class="n">view</span><span class="o">.</span><span class="na">setOnClickListener</span><span class="o">(</span><span class="k">new</span> <span class="n">View</span><span class="o">.</span><span class="na">OnClickListener</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onClick</span><span class="o">(</span><span class="n">View</span> <span class="n">v</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">onMovieClickListener</span><span class="o">.</span><span class="na">onMovieClick</span><span class="o">((</span><span class="n">Movie</span><span class="o">)</span> <span class="n">v</span><span class="o">.</span><span class="na">getTag</span><span class="o">());</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">MovieViewHolder</span><span class="o">(</span><span class="n">view</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onBindViewHolder</span><span class="o">(</span><span class="nd">@NonNull</span> <span class="n">MovieViewHolder</span> <span class="n">viewHolder</span><span class="o">,</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Movie</span> <span class="n">movie</span> <span class="o">=</span> <span class="n">movies</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+        <span class="n">viewHolder</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+        <span class="n">viewHolder</span><span class="o">.</span><span class="na">itemView</span><span class="o">.</span><span class="na">setTag</span><span class="o">(</span><span class="n">movie</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">interface</span> <span class="nc">Listener</span> <span class="o">{</span>
+
+        <span class="kt">void</span> <span class="nf">onMovieClick</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movie</span><span class="o">);</span>
+
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">movieAdapter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MovieAdapter</span><span class="o">(</span><span class="n">movies</span><span class="o">,</span> <span class="k">new</span> <span class="n">MovieAdapter</span><span class="o">.</span><span class="na">Listener</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onMovieClick</span><span class="o">(</span><span class="n">Movie</span> <span class="n">movie</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">Toast</span><span class="o">.</span><span class="na">makeText</span><span class="o">(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">movie</span><span class="o">.</span><span class="na">name</span><span class="o">,</span> <span class="n">Toast</span><span class="o">.</span><span class="na">LENGTH_SHORT</span><span class="o">).</span><span class="na">show</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+</code></pre></div></div>
+
+<p><img src="img/toast.png" width="400px" /></p>
+
+<p>Простейший пример использования <code class="highlighter-rouge">RecyclerView</code> можно посмотреть <a href="https://github.com/otopba/polis-mail-ru-recyclerview-sample">тут</a></p>
+
+<h2 id="что-почитать">Что почитать</h2>
+
+<ul>
+  <li>https://developer.android.com/guide/topics/ui/layout/recyclerview</li>
+  <li>https://google-developer-training.gitbooks.io/android-developer-fundamentals-course-concepts/content/en/Unit%202/44_c_recyclerview.html</li>
+</ul>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Создание Hello World приложения | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Создание Hello World приложения" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/01_intro/011_hello_world/" />
+<meta property="og:url" content="http://localhost:4000/01_intro/011_hello_world/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/01_intro/011_hello_world/","headline":"Создание Hello World приложения","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В этом уроке мы создадим простейшее Android приложение, состоящее из одного экрана, на котором отображается текст приветствия. Несмотря на простоту, в процессе создания этого приложения мы познакомимся с несколькими важными базовыми концепциями, без которых в Android разработке просто никуда! Поэтому, будьте внимательны :)</p>
+
+<h2 id="создание-проекта">Создание проекта</h2>
+
+<p>Запустите Android Studio и выберите “Start a new Android Studio project” на приветственном экране.</p>
+
+<p><img src="img/0200_start_new_project.png" width="1200px" /></p>
+
+<p>Следующий экран называется “Create Android Project”, и здесь вам надо заполнить несколько полей.</p>
+
+<p><img src="img/0210_start_new_project.png" width="1200px" /></p>
+
+<p>Прежде всего, это <strong>Application name</strong> – название приложения как видит его пользователь – это может быть произвольная строка. Android Studio может использовть Application name  для названия директории, в которой будет создан проект, а также как часть Package name. Поэтому, если вы используете в Applcation name какие-нибудь экзотические символы (например, кириллицу), то обязательно проверьте правильность Project location и Package name.</p>
+
+<p>Следующее поле – это <strong>Company domain</strong>. На самом деле, в Android разработке нет такого понятия как Company domain. Оно присуствует только на этом экране, и нужно оно для того, чтобы из него сгенерировать Package name. Подразумевается, что сюда надо ввести что-то похожее на доменное имя. Например, можно написать <code class="highlighter-rouge">&lt;username&gt;.github.com</code> или <code class="highlighter-rouge">&lt;first name&gt;.&lt;last name&gt;.ru</code>.</p>
+
+<p><strong>Project location</strong> – путь к директории создаваемого проекта. Укажите любое удобное вам место, главное – это должна быть новая директория, в которой будет лежать сам проект, а не его родительская папка. (Например, C:\projects не годится, а C:\projects\HelloWorldDemoApp – годится).</p>
+
+<p><strong>Package name</strong> – уникальный идентификатор приложения с точки зрения операционной системы Android, который используется в технических целях везде, где надо идентифицировать приложение. Например, на одном устройстве не могут быть установлены два приложения с одинаковым package name. Также package name используется как основной идентификатор в магазинах приложений. Поэтому package name надо выбирать правильно – оно должно быть уникальное, понятное, адекватное. Обычно package name похоже на доменное имя наоборот с добавлением названия приложения, например <code class="highlighter-rouge">com.github.&lt;username&gt;.helloworld.</code> Package ID или Application ID являются синонимами Package name на Android. А вот понятие Java пакета технически никак не связано с Package name, хотя часто в Android приложении используются имена Java пакетов, совпадающие с Package name.</p>
+
+<p>Мы не будем писать код на C++ или Kotlin, поэтому галочки с пунктов “Include C++ support” и “Include Kotlin support” лучше убрать.</p>
+
+<p>На экране Target Android Devices убедитесь, что выбран пункт Phone and Tablets, и не выбраны никакие другие пункты (Wear OS, TV и пр) – это значит, что приложение предназначено для смартфонов и планшетов. Если вы выберите дополнительные платформы, то для них будут сгенерированы отдельные модули и будут добавлены дополнительные зависимости – это нам не нужно.</p>
+
+<p><img src="img/0220_start_new_project_min_sdk.png" width="1200px" /></p>
+
+<p>Важный момент на этом экране – выбор минимальной поддерживаемой версии Android для вашего приложения. Для приложения Hello World можно оставить дефолтное значение (на момент написания статьи это <em>API 21: Android 5.0</em>), однако для реальных приложений к выбору минимальной поддерживаемой версии Android надо подходить более ответственно.</p>
+
+<p>Чем выше минимальная поддерживаемая версия, тем проще разрабатывать приложения – вы сможете легко использовать новые фичи, появившиеся только в поздних версиях Android, и вам не надо будет думать о поддержке старых устройств, но, с другой стороны, ваше приложение не сможет работать на более старых устройствах, и, таким образом, потенциальная аудитория приложения будет меньше. Если же вы хотите, чтобы ваше приложение работало у максимального количества пользователей, то вам надо выбирать более древнюю минимальную версию Android, но в таком случае в процессе разработки вы можете столкнуться с проблемами совместимости со старыми устройствами. Выбор минимальной поддерживаемой версии Android – это всегда компромисc между сложностью разработки и потенциальным размером аудитории. Если нажать на Help me choose, то вы увидите список версий Android с числами охвата аудитории для каждой из версий (если эта версия будет выбрана в качестве минимально поддерживаемой).</p>
+
+<p><img src="img/0230_cumulative_api_level.png" width="1200px" /></p>
+
+<p>На момент написания этой статьи для большинства приложений разумным выбором будет <em>API 19: Android 4.4</em> или <em>API 21: Android 5.0</em>.</p>
+
+<p>На следующем экране Add an Activity to Mobile вам предлагается сразу при создании проекта добавить в приложение первый дефолтный экран (Activity – это программный компонент, приблизительно соответствующий отдельному экрану приложения). В нашем Hello World приложении вам следует выбрать Add No Activity, то есть не добавлять Activity в приложение. Мы сдеалаем это позже вручную – это очень просто, а предлагаемые варианты это всего лишь шаблоны для Activity с различными стандартными элементами пользовательского интерфейса.</p>
+
+<p><img src="img/0240_add_no_activity.png" width="1200px" /></p>
+
+<p>На этом начальная конфигурация проекта завершена – жмем Finish, и Android Studio создаст наш проект. Если вы недавно установили Android Studio и впервые создаете проект, то, возможно, вам придется немного подождать, пока скачаются дополнительные инструменты и зависимости. Дождитесь сообщения “Build: completed successfully” в нижней панели во вкладке Build – это значит, что инициализация проекта завершена, он даже уже собрался, и можно начинать работать.</p>
+
+<p><img src="img/0260_successful_init_project.png" width="1200px" /></p>
+
+<p>Возможные проблемы на данном этапе – отсутствие соединения с Интернетом, невозможность скачать необходимые зависимости. Если в нижней панели во вкладке Build или Sync появились какие-то сообщения об ошибках, то устраните их причину и обновите проект нажатием на кнопку “Sync Project with Gradle Files” в верхней панели инструментов.</p>
+
+<p><img src="img/0270_failed_init_project.png" width="1200px" /></p>
+
+<h2 id="структура-проекта">Структура проекта</h2>
+
+<p>Сразу после создания нового пустого проекта мы можем посмотреть на его содержимое в панели проекта, которая обычно отображается слева. Если по какой-то причине этой панели нет, нажмите Alt-1 (на Windows) – это keyboard shortcut для открыти панели проекта. Сейчас там есть два пункта: app и Gradle Scripts – раскройте их.</p>
+
+<p><img src="img/0280_project_panel.png" width="1200px" /></p>
+
+<p><code class="highlighter-rouge">Gradle Scripts</code> содержит файлы, относящиеся к системе сборки проекта (Gradle – это опенсорсная система автоматической сборки, при помощи которой собираются Android приложения).</p>
+
+<p><code class="highlighter-rouge">app</code> – это модуль приложения. Любой Android проект состоит из модулей, в простейшем случае – из одного модуля, внутри которого находится весь исходный код и ресурсы приложения. Внутри app можно увидеть следующие разделы:</p>
+
+<ul>
+  <li>manifests</li>
+  <li>java</li>
+  <li>generatedJava</li>
+  <li>res</li>
+</ul>
+
+<p>Внутри <strong>manifests</strong> находится файл <code class="highlighter-rouge">AndroidManifest.xml</code> – это файл, в котором указаны основные параметры приложения и его структура с точки зрения операционной системы Android.</p>
+
+<p>Раздел <strong>java</strong> содержит исходный код приложения (на языке Java или Kotlin), который делится на три части: основной код (сейчас там пусто), код юнит тестов (test) и код инструментальных тестов (androidTest). AndroidStudio всегда генерирует заглушки для тестов и инструментальных тестов при создании нового проекта или нового модуля. Нас они сейчас не интересуют, поэтому их можно удалить. Выберите Java пакеты test и androidTest и удалите их.</p>
+
+<p>Раздел <strong>generatedJava</strong> содержит Java файлы, которые генерируются во время сборки приложения. Они не являются частью исходного кода проекта, однако они используются в коде приложения. Эти Java файлы никогда не надо редактировать, потому что, во-первых, это не нужно, а во-вторых, если вы их отредактируете, то при очередной сборке проекта все изменения пропадут.</p>
+
+<p>Наконец, папка <strong>res</strong> содержит ресурсы приложения – всякие полезные штуки, не являющиеся исполняемым кодом: изображения, тексты, верстка и т.п. Обратите внимание, что Android ресурсы в папке res не являются обычными Java ресурсами (которые загружаются при помощи <code class="highlighter-rouge">java.lang.ClassLoader.getResource()</code>) – это совершенно особенная тема в Android, которая обладает большими возможностями (но об этом позже).</p>
+
+<p>Я не просто так называл некоторые элементы внутри app “разделами”, а не “папками” – дело в том, что они не являются папками в файловой системе. Панель проекта имеет несколько режимов отображения. По умолчанию используется режим Android – в нем файлы сгруппированы таким вот способом, и этот способ не соответсвует их размещению в файловой системе. Если вы хотите видеть, как файлы проекта расположены на самом деле, переключите панель проекта в режим Project (выпадающий список в верхней части панели проекта), в котором отображается реальная файловая структура проекта.</p>
+
+<p><img src="img/0290_project_panel_project_mode.png" width="1200px" /></p>
+
+<h2 id="создание-экрана-hello-world">Создание экрана Hello World</h2>
+
+<p>Теперь мы добавим в приложение один экран, на котором будет отображаться приветствие. Основным компонентом, соответствующим экрану в UI приложения, является <code class="highlighter-rouge">Activity</code>. (По-русски часто говорят <em>активность</em>, однако в русскоязычной официальной документации почему-то пишут <em>операция</em> – это неудачный перевод. Не говорите <em>операция</em> – вас не поймут). В коде активность – это класс, наследующий от базового класса <code class="highlighter-rouge">android.app.Activity.</code></p>
+
+<p>Создайте класс <code class="highlighter-rouge">HelloWorldActivity</code> в дефолтном пакете проекта (при создании нового проекта автоматически генерируется дефолтный пакет с названием, совпадающим с Package name приложения в папке app/src/main/java/). Базовый класс <code class="highlighter-rouge">android.app.Activity</code> можно указать в диалоге создания класса, либо самому написать руками в коде.</p>
+
+<p><img src="img/0300_create_activity_class.png" width="1200px" /></p>
+
+<p><img src="img/0310_empty_activity_class.png" width="600px" /></p>
+
+<p>Прежде чем мы напишем какой-то полезный код внутри <code class="highlighter-rouge">HelloWorldActivity</code>, добавим запись о ней в манифест приложения. Обратите внимание: название класса <code class="highlighter-rouge">HelloWorldActivity</code> подсвечено желтым в коде – это Android Studio подсказывает нам, что активность <code class="highlighter-rouge">HelloWorldActivity</code> не прописана в манифесте. Таковы правила – все активности приложения должны быть прописаны в манифесте для того, чтобы операционная система знала, из каких экранов состоит наше прилжение, и как их запускать.</p>
+
+<p><strong>Манифест приложения</strong> находится в файле <code class="highlighter-rouge">app/src/main/AndroidManifest.xml</code> – откройте этот файл и добавьте в него такой код внутри application элемента:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;activity android:name=".HelloWorldActivity"&gt;
+        &lt;intent-filter&gt;
+            &lt;action android:name="android.intent.action.MAIN"/&gt;
+            &lt;category android:name="android.intent.category.LAUNCHER"/&gt;
+        &lt;/intent-filter&gt;
+    &lt;/activity&gt;
+</code></pre></div></div>
+
+<p>Элемент activity в Android манифесте декларирует активность внутри приложения в качестве точки входа в UI приложения из операционной системы. В этих нескольких строчках есть несколько интересных моментов:</p>
+
+<ul>
+  <li>
+    <p>Имя класса активности указывается в атрибуте <code class="highlighter-rouge">name</code>. В общем случае надо указывать полное Java имя класса активности, но здесь мы видим сокращенный вариант – точка с простым именем класса. Это соглашение, действующее в файле манифеста, которое означает, что указанное имя класса добавляется к дефолтному имени пакета, указанному в корневом элементе манифеста (и таким образом получается полное Java имя класса): <code class="highlighter-rouge">&lt;manifest package="ru.ok.technopolis.helloworld"&gt;</code></p>
+  </li>
+  <li>
+    <p>Элемент <code class="highlighter-rouge">intent-filter</code> внутри activity обычно указывает на то, что данная активность может быть запущена каким-то определенным способом.</p>
+  </li>
+  <li>
+    <p>В данном случае <code class="highlighter-rouge">action</code> и <code class="highlighter-rouge">category</code> внутри <code class="highlighter-rouge">intent-filter</code> указывают на то, что данная активность, во-первых, является основной (Main) точкой входа в приложение (и именно эта активность будет запущена, когда мы в Android Studio нажмем кнопку Run), а во-вторых, её иконка должна отображаться на домашнем экране (Launcher) устройства. В любом обычном приложении, которое запускается привычным нам способом – по клику на иконку в домашнем экране, есть активность с такими настройками в манифесте.</p>
+  </li>
+</ul>
+
+<p>Теперь попробуем запустить наше Hello World приложение – для этого можно нажать кнопку Run (треугольник типа Play в верхней панели инструментов) или выбрать Run ‘app’ в меню.</p>
+
+<h3 id="создание-эмулятора">Создание эмулятора</h3>
+
+<p>Если вы раньше не запускали приложения в Android Studio, то, скорее всего, вы увидите диалог с сообщением <em>“No USB devices or running emulators detected”</em>. Это значит, что нет устройств, на которых можно было бы запустить приложение, и нам следует создать эмулятор – для этого нажмите на кнопку “Create New Virtual Device” в этом диалоге:</p>
+
+<p><img src="img/0320_run_no_emulator_nor_device.png" width="1200px" /></p>
+
+<p>В появившемся диалоге “Select Hardware” выберите Nexus 5 (На самом деле, можете выбрать любой девайс, который вам нравится. Nexus 5 был отличным смартфоном в свое время, и до сих пор память о нём жива в сердцах разработчиков, а дизайнеры любят использовать параметры экрана Nexus 5 в своих скетчах, поэтому иногда удобно запускать приложения на Nexus 5, чтобы сверять с дизайном.)</p>
+
+<p><img src="img/0330_create_emulator_select_skin.png" width="1200px" /></p>
+
+<p>затем в диалоге “System Image” выберите <em>Pie, API Level 28</em> (здесь, возможно, вам потребуется предварительно скачать соответствующий системный образ),</p>
+
+<p><img src="img/0340_select_system_image.png" width="1200px" /></p>
+
+<p>и, наконец, в последнем диалоге “Android Virtual Device” оставьте всё как есть и нажмите Finish</p>
+
+<p><img src="img/0350_create_avd.png" width="1200px" /></p>
+
+<p>Будет создан эмулятор устройства Nexus 5 с операционной системой Android версии 9.0, который появится в списке устройств, на которых можно запустить приложение, под именем “Nexus 5 API 28”. Таким же образом вы можете создавать сколько угодно разных эмуляторов с разными типами устройств и версиями Android, которые можно использовать одновременно (только имейте в виду, что каждый эмулятор занимет несколько гигабайт дискового пространства).</p>
+
+<p>Когда эмулятор создан, мы можем запустить на нём наше приложение Hello World. Вскоре после запуска вы увидите белый экран в эмуляторе – это и есть активность Hello World. Вполне ожидаемый результат для пустого класса без единой строчки кода? На самом деле можно задаться вопросом, почему экран белый? Он мог бы быть черным или вообще прозрачным (тогда бы мы не смогли отличить пустое приложение от домашнего экрана смартфона). Где-то ведь должен быть код, который рисует этот белый цвет на весь экран? Но мы этот код не писали… Ответ на этот вопрос – <em>дефолтная тема активности</em>, в которой задан белый цвет фона окна. Пока так, без объяснений :)</p>
+
+<p><img src="img/0360_blanc_hello_world.png" width="1200px" /></p>
+
+<h3 id="создание-ui-для-экрана-hello-world">Создание UI для экрана Hello World</h3>
+
+<p>Теперь, когда простейший скелет приложения готов, можно добавить код, который будет вместо пустого белого экрана отображать текст приветствия. Для этого переопределим один важный метод в классе <code class="highlighter-rouge">HelloWorldActivity</code>. Добавьте такой код в пустое тело класса <code class="highlighter-rouge">HelloWorldActivity</code> (либо воспользуйтесь диалогом переопределения методов, который вызывается Ctrl-O):</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+</code></pre></div></div>
+
+<p>Метод <code class="highlighter-rouge">onCreate</code> является основной точкой входа в <code class="highlighter-rouge">Activity</code> – он вызывается системой каждый раз, когда создается новая активность. В этом методе можно создать и инициализировать все необходимые компоненты UI, которые будут отображаться в окне активности. Для определения UI в Android используются файлы верстки (layout файлы или лэйауты), которые являются частью ресурсов приложения. Это XML файлы, в которых описывается, как будет устроена и как будет выглядеть какая-то часть UI приложения. Приложение в рантайме при помощи специальных методов загружает лэйауты из ресурсов и использует их для создания UI.</p>
+
+<p>Значит, для отображения текста приветствия на экране HelloWorldActivity нам нужно в ресурсах приложения создать файл верстки, в котором будет описано, как это приветствие выглядит. Ресурсы приложения лежат в папке <code class="highlighter-rouge">src/main/res</code> в модуле <code class="highlighter-rouge">app</code> (если в проекте несколько модулей, то каждый модуль имеет свои ресурсы), внутри которой находятся директории с ресурсами разного типа. Файлы верстки лежат в директории <code class="highlighter-rouge">layout</code>. Если такой директории нет в вашем проекте, то её нужно создать – для этого выберите пункт <em>New / Android Resource Directory</em> в контектном меню папки res.</p>
+
+<p><img src="img/0370_create_layout_dir.png" width="1200px" /></p>
+
+<p>Затем в диалоге создания директории ресурсов выберите Resoucre Type <em>layout</em> и нажмите OK.</p>
+
+<p><img src="img/0380_create_layout_dir.png" width="1200px" /></p>
+
+<p>Эти действия абсолютны эквивалентны просто созданию папки <code class="highlighter-rouge">layout</code> внутри <code class="highlighter-rouge">res</code> в файловой системе – вы можете сделать это в командной строке при помощи команды mkdir, и эффект будет точно такой же. Диалог в Android Studio удобен тем, что он показывает, какие имена директорий имеют значение, и какие у них могут быть модификаторы.</p>
+
+<p>Теперь в папке layout создадим файл верстки экрана Hello World – выберите <em>New / Layout resource file</em> в контекстном меню папки layout,</p>
+
+<p><img src="img/0390_create_layout.png" width="1200px" /></p>
+
+<p>введите имя <code class="highlighter-rouge">activity_hello_world</code> (есть распространенное соглашение именно так именовать файлы верстки для Activity – сначала слово activity, потом имя класса), а в поле Root element введите <code class="highlighter-rouge">FrameLayout</code> (он лучше подходит для нашего простого примера, чем дефолтный <code class="highlighter-rouge">LinearLayout</code>).</p>
+
+<p>Android Studio создаст файл activity_hello_world.xml и откроет его в редакторе. Редактор лэйаутов в Android Studio имеет два режима: Design для “визуального” редактирования и Text для нормальной работы. Рекомендую сразу забыть про Design и переключиться в Text – профессиональные разработчики пользуются только им, а для визульной оценки того, что получается, есть панель Preview.</p>
+
+<p>В исходном коде верстки вы увидите автоматически сгенерированный корневой элемент <code class="highlighter-rouge">FrameLayout</code>. <code class="highlighter-rouge">FrameLayout</code> – это имя класса <code class="highlighter-rouge">android.widget.FrameLayout</code> из Android SDK, который наследует от <code class="highlighter-rouge">android.view.ViewGroup</code>, который в свою очередь наследует от <code class="highlighter-rouge">android.view.View</code>. Убедиться в этом можно, если навести курсор на имя элемента <code class="highlighter-rouge">FrameLayout</code> и нажать Ctrl-B (это переход к исходному коду в Android Studio) – вы увидите исходный код класса <code class="highlighter-rouge">FrameLayout</code>.</p>
+
+<p><code class="highlighter-rouge">View</code> является самым базовым фундаментальным элементом, из которого строится UI в Android. Каждый экземпляр <code class="highlighter-rouge">View</code> соответствует какой-то прямоугольной области в пользовательском интерфейсе, в котором что-то отображается и происходит взаимодействие с пользователем. Все View на экране организованы в иерархическую структуру типа дерево. <code class="highlighter-rouge">ViewGroup</code> – это особый тип View, который может находиться в узле дерева, то есть содержать в себе другие View. Файлы верстки определяют иерархическую структуру дерева View при помощи иерархической структуры XML элементов. Каждый XML элемент соответсвует какому-то View, полное Java имя класса которого используется в качестве имени XML элемента. Для стандартных классов View из Android SDK можено использовать простое имя класса (как наш <code class="highlighter-rouge">FrameLayout</code>).</p>
+
+<p>Итак, автоматически сгенерированный файл верстки <code class="highlighter-rouge">activity_hello_world.xml</code> содержит описание дерева <code class="highlighter-rouge">View</code>, которое состоит из одного единственного корневого узла <code class="highlighter-rouge">FrameLayout</code>. <code class="highlighter-rouge">FrameLayout</code> – это простейший контейнер (рамка), внутри которой могут отображаться другие <code class="highlighter-rouge">View</code>. Мы добавим в него <code class="highlighter-rouge">TextView</code> – специальный тип <code class="highlighter-rouge">View</code> для отображения текста.</p>
+
+<p>Отредактируйте <code class="highlighter-rouge">activity_hello_world.xml</code> так, чтобы весь его код выглядел следующим образом:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;FrameLayout</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+             <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+             <span class="na">android:layout_height=</span><span class="s">"match_parent"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;TextView</span> <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span> 
+              <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+              <span class="na">android:layout_gravity=</span><span class="s">"center"</span>
+              <span class="na">android:text=</span><span class="s">"Hello, World!"</span><span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/FrameLayout&gt;</span>
+</code></pre></div></div>
+
+<p>Атрибут <code class="highlighter-rouge">text</code> у <code class="highlighter-rouge">TextView</code>, наверное, не требует объяснений, а остальные атрибуты заслуживают особого внимания. Здесь мы видим атрибуты <code class="highlighter-rouge">layout_width</code>, <code class="highlighter-rouge">layout_height</code> и <code class="highlighter-rouge">layout_gravity</code>. Вообще, все атрибуты, имя которых начинается на <code class="highlighter-rouge">layout_</code>, определяют размеры и расположение <code class="highlighter-rouge">View</code>. <code class="highlighter-rouge">layout_width</code> и <code class="highlighter-rouge">layout_height</code> определяют ширину и высоту.</p>
+
+<p>Ключевое слово <code class="highlighter-rouge">match_parent</code> для ширины или высоты говорит о том, что размер View должен совпадать с его родителем. <code class="highlighter-rouge">FrameLayout</code> является корневым элементом лэйаута, и его родитель определяется тем, как мы используем этот лэйаут. Поскольку мы собираемся использовать наш лэйаут для экрана Hello World, родителем <code class="highlighter-rouge">FrameLayout</code> можно условно счиать весь экран. То есть, <code class="highlighter-rouge">FrameLayout</code> примет размеры целого экрана.</p>
+
+<p>Ключевое слово <code class="highlighter-rouge">wrap_content</code> для ширины или высоты говорит о том, что View должен принять минимально необходимый размер для того, чтобы в нем можно было отобразить его содержимое. В нашем лэйауте <code class="highlighter-rouge">TextView</code> примет размеры прямоугольной области, содержащей текст “Hello, World!”.</p>
+
+<p>Атрибут <code class="highlighter-rouge">layout_gravity</code> определяет, как View располагается внутри своего родителя. В данном случае <code class="highlighter-rouge">TextView</code> будет располагаться по центру своего родителя <code class="highlighter-rouge">FrameLayout</code>, то есть по центру экрана.</p>
+
+<p>Из всех атрибутов, которые могут быть у XML элементов в файле верстки, самые важные – это <code class="highlighter-rouge">layout_width</code> и <code class="highlighter-rouge">layout_height</code>. Они являются обязательными. Если эти атрибуты не указать, то приложение упадет при попытке загрузить файл верстки.</p>
+
+<p>Вернемся к коду <code class="highlighter-rouge">HelloWorldActivity</code> и его методу <code class="highlighter-rouge">onCreate</code>, в котором мы должны создать UI экрана Hello World. Сейчас в этом методе есть только вызов super.onCreate(), который необходим для того, чтобы активность была создана правильно. Добавьте одну строчку кода после super.onCreate:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	setContentView(R.layout.activity_hello_world);
+</code></pre></div></div>
+
+<p>Эта строчка кода означает буквально следующее: загрузить из файла верстки <code class="highlighter-rouge">activity_hello_world</code> иерархию View и использовать её в качестве контента, отображемого в UI нашей активности. Метод <code class="highlighter-rouge">setContentView</code> является методом класса <code class="highlighter-rouge">Activity</code>, и один из его вариантов принимает в качестве аргумента ID ресурса, соответсвующего файлу верстки, который надо использовать. ID ресурсов имеют тип int, и они автоматически генерируются для всех ресурсов приложения во время сборки. <code class="highlighter-rouge">R.layout.activity_hello_world</code> – это автоматически сгенерированная константа, соответствующая ресурсу <code class="highlighter-rouge">activity_hello_world</code> в папке <code class="highlighter-rouge">layout</code>, которую можно использовать в коде приложения.</p>
+
+<p>Запустите приложение снова – в этот раз вы увидите сообщение Hello World в центре экрана</p>
+
+<p><img src="img/0400_hello_world_displayed.png" width="1200px" /></p>
+
+<h3 id="строковые-ресурсы-и-локализация">Строковые ресурсы и локализация</h3>
+
+<p>Для того, чтобы всё было сделано правильно, осталось сделать одно небольшое исправление. Открйте файл верстки <code class="highlighter-rouge">activity_hello_world</code> и посмотрите на атрибут <code class="highlighter-rouge">text</code> у <code class="highlighter-rouge">TextView</code>: он подсвечен желтым цветом – это Android Studio намекает, что что-то с ним не так. Если навести на него курсор, то можно увидеть сообщение о том, что не так: студия говорит, что строка “Hello World!” захардкожена, и так делать не надо. Действительно, строки в Android (как и практически везде) не принято хардкодить, а принято хранить в ресурсах. Для этого есть специальный тип ресурсов – <code class="highlighter-rouge">string</code>.</p>
+
+<p>Откройте файл <code class="highlighter-rouge">res/values/strings.xml</code> – сейчас там должна быть всего одна строчка <code class="highlighter-rouge">app_name</code>, которая была автоматически сгенерирована при создании проекта. Добавьте еще одну строчку для нашего сообщения:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	&lt;string name="hello_world"&gt;Hello, World!&lt;/string&gt;
+</code></pre></div></div>
+
+<p>Теперь вместо захардкоженной строки в файле верстки <code class="highlighter-rouge">activity_hello_world</code> можно использовать ссылку на ресурс <code class="highlighter-rouge">hello_world</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	&lt;TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center"
+              android:text="@string/hello_world"/&gt;
+</code></pre></div></div>
+
+<p>Синтаксис <code class="highlighter-rouge">@string/hello_world</code> является XML аналогом Java констант, используемых для ID ресурсов в коде. В Java коде ID этой строки выглядел бы так:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	R.string.hello_world
+</code></pre></div></div>
+
+<p>Кроме того, что теперь текст не захардкожен в коде, и его использование и изменение теперь лучше организовано, есть еще одна хорошая причина хранить строки в ресурсах приложения. Эта причина – <strong>локализация</strong>. Android предоставляет механизм локализации, основанный на системе ресурсов, который позволяет показывать разные варианты текста на разных языках в зависимости от того, какой язык выбран в качестве основного в настройках устройства, на котором запущено приложение.</p>
+
+<p>В качестве демонстрации системы локализации добавим в наше приложение перевод Hello World на русский язык. Для этого создадим <strong>альтернативный ресурс</strong> <code class="highlighter-rouge">hello_world</code>, который будет использоваться в русской локали.</p>
+
+<h4 id="альтернативные-ресурсы">Альтернативные ресурсы</h4>
+
+<p>Понятие альтернативных ресурсов – это общее понятие на Android, которое применяется к любым типам ресурсов (не только к строчкам) и означает, что для некоторого ресурса существуют его альтернативные версии, которые используются при каких-то особых условиях вместо дефолтной версии. Альтернативные версии ресурсов имеют такой же ID, как и основной дефолтный ресурс, и код, который ссылается на этот ID может не думать о том, какая версия ресурса будет использована на самом деле – Android выбирает нужную версию сам автоматически.</p>
+
+<p>Альтернативные ресурсы хранятся в отдельных директориях внутри папки res, которые отличаются от обычных директорий с ресурсами тем, что к их имени добавляется квалификаторы (qualifier), которые соответствуют условию, при котором ресурсы в этой директории будут использоваться. Для создания директории для альтернативных строк можно воспользоваться диалогом создания Android Resource Directory – в этот раз следует выбрать Resource type <em>values</em> (потому что оригинальные строковые ресурсы лежат в директории values), и добавить квалификатор <em>Locale</em>, выбрав при этом язык <em>Russian</em> и регион <em>Any Region</em>.</p>
+
+<p><img src="img/0410_add_locale_qualifier.png" width="1200px" /></p>
+
+<p><img src="img/0420_add_values_ru.png" width="1200px" /></p>
+
+<p>Android Studio создаст директорию <code class="highlighter-rouge">values-ru</code> внутри папки <code class="highlighter-rouge">res</code>. Если вы точно знаете, как должна называться директория с альтернативными ресурсами, вы можете просто создаеть её руками в файловой системе – это будет иметь такой же эффект. Диалог же удобен тем, что вы можете увидеть все возможные варианты – например, список языков и регионов, которые можно использовать.</p>
+
+<p>Создайте внутри директории <code class="highlighter-rouge">values-ru</code> файл <code class="highlighter-rouge">strings.xml</code> со следующим содержимым:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;resources&gt;
+    &lt;string name="hello_world"&gt;Здравствуй, Мир!&lt;/string&gt;
+&lt;/resources&gt;
+</code></pre></div></div>
+
+<p>Здесь определен альернативный ресурс <code class="highlighter-rouge">hello_world</code> – это то же самое имя, которое мы уже использовали для основного ресурса. Значение же ресурса отличается – это перевод на русский язык дефолтного значения. Это всё, что нужно сделать для работы системы локализации – мы просто добавили перевод одной строки, и не изменили ничего в коде приложения, где эта строка используется.</p>
+
+<p>Чтобы проверить, как это работает, перезапустите приложение на эмуляторе. По умолчанию в эмуляторе уствновлен английский язык в качестве основного. Чтобы сменить язык, зайдите в системные настройки в раздел <em>System / Languages &amp; Input / Language</em> и там добавьте русский язык и перетащите его на первое место в списке, чтобы он стал основным языком интерфейса. После этого переключитесь обратно в приложение Hello World – вы увидите сообщение “Здравствуй, Мир!” на русском языке. При этом название приложения Hello World, которое можно увидеть, например, под иконкой приложения на домашнем экране смартфона, осталось неизменным – потому что строковый ресурс <code class="highlighter-rouge">app_name</code> не имеет альтернативного ресурса в русской локали.</p>
+
+<h2 id="итоги">Итоги</h2>
+
+<p>Hello World – это простейшее приложение, которое вообще можно сделать на Android (не считая пустого экрана), но в процессе его создания мы много узнали о базовых технологиях Android разработки, которые используются во всех проектах. Вот краткий список того, с чем мы только что познакомились:</p>
+
+<ul>
+  <li>Создание проекта Android приложения в Android Studio</li>
+  <li>Выбор минимальной поддерживаемой версии Android</li>
+  <li>Структура проекта: манифест, исходный код, ресурсы, скрипты для сборки</li>
+  <li>Создание класса типа <code class="highlighter-rouge">Activity</code> – основной компонент UI приложения</li>
+  <li>Добавление записи об Activity в манифест приложения</li>
+  <li>Определение главной активности приложения при помощи action Main и сategory Launcher</li>
+  <li>Создание эмулятора Android смартфона и запуск приложения на эмуляторе</li>
+  <li>Метод <code class="highlighter-rouge">Activity.onCreate</code>, инициализация UI</li>
+  <li>Общее представление об устройстве UI:<code class="highlighter-rouge">View</code>, <code class="highlighter-rouge">ViewGroup</code>, иерархия (дерево) View</li>
+  <li>Ресурсы приложения</li>
+  <li>ID ресурсов</li>
+  <li>Файлы верстки, загрузка иерархии View из файлов верстки</li>
+  <li>Создание директорий для отдельных типов ресурсов</li>
+  <li>Создание простейшей верстки с <code class="highlighter-rouge">FrameLayout</code> и <code class="highlighter-rouge">TextView</code></li>
+  <li>Атрибуты верстки: <code class="highlighter-rouge">layout_width</code>, <code class="highlighter-rouge">layout_height</code>, <code class="highlighter-rouge">layout_gravity</code></li>
+  <li>Ключевые значения для размеров верстки: <code class="highlighter-rouge">match_parent</code>, <code class="highlighter-rouge">wrap_content</code></li>
+  <li>Строковые ресурсы</li>
+  <li>Альтернативные ресурсы и локализация</li>
+</ul>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

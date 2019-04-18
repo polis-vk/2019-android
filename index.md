@@ -10,4 +10,5 @@ title: Курс Android разработки в Технополисе
 3. [Асинхронная работа](03_async_work/index.md)
 4. Хранение данных
 5. [Custom view, Animations, Touches](05_custom_view_animations_touches/)
+6. [Тестирование и CI/CD](10_testing_CI/)
 

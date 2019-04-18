@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Под капотом у Hello World. | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Под капотом у Hello World." />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/01_intro/012_internals/" />
+<meta property="og:url" content="http://localhost:4000/01_intro/012_internals/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/01_intro/012_internals/","headline":"Под капотом у Hello World.","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В этом уроке мы на примере простейшего Android приложения, созданного в <a href="../011_hello_world">предыдущем уроке</a>, подробно изучим устройство проекта, его сборку, попробуем базовые инструменты разработки и отладки, которые пригодядтся в дальнейшем.</p>
+
+<h2 id="устройство-проекта">Устройство проекта</h2>
+
+<p>В <a href="../011_hello_world/">прошлом уроке</a> мы уже сделали краткий обзор структуры проекта, но тогда мы больше внимания уделили файлам с исходным кодом. Сейчас мы подробнее рассмотрим файлы, о которых в прошлый раз упоминули лишь вскользь.</p>
+
+<h3 id="build-скрипты">Build скрипты</h3>
+
+<p>Стандартная система сборки Android приложений основана на Gradle (https://gradle.org/) – опенсорнсом инструменте для сборки общего назначения – и плагине для Gradle, который знает, как собирать Android проекты. Вам не нужно устанавливать эти инструменты, потому что система сборки устроена так, что всё необходимое скачивается и устанавливается во время сборки  (удобно, но требует подключения к Интернету во время сборки). Однако, если по каким-то причинам, вы хотите использовать предустановленный дистрибутив Gradle, вы можете указать путь к нему в настройках Android Studio (<em>Use local Gradle distribution</em> в разделе <em>Build, Execution, Deployment / Gradle</em> настроек).</p>
+
+<p><img src="img/0600_gradle_settings.png" width="800px" /></p>
+
+<p>Стандартная конфигурация системы сборки включает использование Gradle Wrapper. Для этого в проекте есть специальные файлы:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;project_dir&gt;/
+	gradlew
+    gradlew.bat
+    gradle/wrapper/
+    	gradle-wrapper.jar
+        gradle-wrapper.properties
+</code></pre></div></div>
+
+<p><strong>gradlew</strong> и <strong>gradlew.bat</strong> – это скрипты для запуска Gradle Wrapper для Linux подобных систем и для Windows. Gradle Wrapper является Java приложением и находится в файле <strong>gradle-wrapper.jar</strong>. Очевидно, что для запуска сборки необходима установленная Java – она входит в комплект установки Android Studio.</p>
+
+<p>Файл <strong>gradle-wrapper.properties</strong> содержит самые общие параметры запуска Gradle, и, наверно, единственный параметр, который вам может понадобиться менять – это версия Gradle в параметре <code class="highlighter-rouge">distributionUrl</code>. Если вы долго работаете над одним проектом, то за время работы может появиться более новая версия Gradle, и тогда, чтобы перейти на неё, вам придется подредактировать <code class="highlighter-rouge">gradle-wrapper.properties</code>.</p>
+
+<p>После старта Gradle Wrapper при необходимости скачивает необходимую версию Gradle и запускает его, чтобы тот занялся уже непосредственно сборкой проекта. За сборку проекта отвечают следующие файлы:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;project_dir&gt;/
+	build.gradle
+    settings.gradle
+    gradle.properties
+    local.properties
+    app/
+    	build.gradle
+</code></pre></div></div>
+
+<p>Начнем с <strong>local.properties</strong> – в этом файле определены свойства, значения которых имеют смысл только на вашей машине, на которой вы запускаете сборку. Это, прежде всего, <code class="highlighter-rouge">sdk.dir</code> – путь к установленному Android SDK. Файл <code class="highlighter-rouge">local.properties</code> должен быть свой у каждого разработчика, который работает над проектом, и его не надо коммитить в общий репозиторий. Если в вашем проекте нет других настроек, зависящих от машины, на которой запускается сборка, то проще определить переменную окружения <code class="highlighter-rouge">ANDROID_HOME</code> – тогда файл <code class="highlighter-rouge">local.properties</code> вообще не будет нужен.</p>
+
+<p>Файл <strong>gradle.properties</strong> содержит настройки, которые используется при сборке проекта. В новом проект там обычно определено свойство <code class="highlighter-rouge">org.gradle.jvmargs</code>, в котором прописан параметр <code class="highlighter-rouge">-Xmx</code> для запуска JVM. Сборка Android приложений требует много памяти, особенно если проект большой (а большим проект может стать очень быстро), поэтому, когда заметите, что сборка стала сильно тормозить, проверьте – не упирается ли она в память, и не надо ли увеличить <code class="highlighter-rouge">-Xmx</code>. Впрочем, оптимизация и ускорение сборки Android проектов это отдельная сложная тема, и одним параметром <code class="highlighter-rouge">-Xmx</code> вопрос не ограничивается.</p>
+
+<p>Файл <strong>settings.gradle</strong> обычно определяет структуру проекта. В новом проекте приложения типа Hello World, содержимое этого файла выглядит так:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>include ':app'
+</code></pre></div></div>
+
+<p>Здесь указан единственный модуль, из которого состоит проект. Если модулей больше – они перечисляются через запятую: <code class="highlighter-rouge">include ':app', ':module1', 'module2'</code>.</p>
+
+<p>Файл <strong>build.gradle</strong> в корне проекта уже содержит какое-то “мясо” – здесь описывается сборка всего проекта на уровне, общем для всех модулей. Файл начинается со следующего блока:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.0'
+    }
+}
+</code></pre></div></div>
+
+<p>Главное здесь – объявление зависимости на Android Gradle плагин: <code class="highlighter-rouge">com.android.tools.build:gradle:3.3.0</code>, который непосредственно отвечает за сборку Android приложения. Вам может понадобиться подредактировать здесь его версию, если во время работы над проектом вышла новая версия плагина с каким-то новыми фичами или оптимизациями, и вы хотите её использовать. Репозитории google и jcenter, прописанные в этом блоке нужны для поиска там указанной версии плагина. Обратите внимание – эти репозитории относятся только к блоку <code class="highlighter-rouge">buildscript</code>, то есть к системе сборки, но они не относятся к зависимостям вашего приложения, которые вы используете в коде.</p>
+
+<p>Репозитории для поиска зависимостей приложения определены в следующем блоке:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+</code></pre></div></div>
+
+<p>Слово <code class="highlighter-rouge">allproject</code> говорит о том, что этот блок применяется ко всем модулям проекта, и вам не надо прописывать эти репозитории в каждом отдельном модуле.</p>
+
+<p>Файл <strong>app/build.gradle</strong>, который лежит в папке модуля приложения app, описывает сборку этого модуля, а так как этот модуль содержит само приложение, в этом билд скрипте содержится всё самое интересное. Первая его строчка</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apply plugin: 'com.android.application'
+</code></pre></div></div>
+
+<p>определяет, что перед нами модуль, содержащий Android приложение, и для его сборки будет использовать Android Gradle плагин. Другой возможный вариант – это <code class="highlighter-rouge">com.android.library</code> для библиотечных модулей. Обычно Android проект содержит один модуль приложения и любое количество библиотечных модулей.</p>
+
+<p>Затем идет блок <code class="highlighter-rouge">android</code>, в котором определены основные параметры приложения:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "ru.ok.technopolis.helloworld"
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+</code></pre></div></div>
+
+<p><strong>applicationId</strong> – это ID, по которому приложения идентифицируются в операционной системе Android и в магазинах приложений вроде Google Play. Этот ID мы указывали при создании проекта в Android Studio.</p>
+
+<p><strong>versionName</strong> – это версия приложения, как её будут видеть пользователи, например, на странице приложения в Google Play или в системных настройках Android устройства в информации о приложении. Значение <code class="highlighter-rouge">versionName</code> может быть любым, но обычно это числа, разделенные точками: <code class="highlighter-rouge">1.0</code>, <code class="highlighter-rouge">1.1</code>, <code class="highlighter-rouge">2.0</code>, <code class="highlighter-rouge">2.0.1</code> – это традиционная <em>семантическая</em> система нумерации версий. Иногда в <strong>versionName</strong> кодируют дату релиза приложения: <code class="highlighter-rouge">19.1.22</code> (22 января 2019 года). Могут присутствовать буквы, например: <code class="highlighter-rouge">5.1-alpha</code>, <code class="highlighter-rouge">19.2.13-debug</code> и пр. Вообще, <code class="highlighter-rouge">versionName</code> используется исключительно как текст для отображения пользователям.</p>
+
+<p><strong>versionCode</strong> – это тоже версия приложения, но, в отличие от <code class="highlighter-rouge">versionName</code>, имеет значение типа <code class="highlighter-rouge">int</code> и используется для алгоритмической обработки и в бизнес-логике приложения. Допустимые значения: положительные целые числа, обязательно возрастающие с каждой версией приложения. Если вы публикуете приложение в магазине приложений, то в каждом следующем обновлении должно быть большее значение <code class="highlighter-rouge">versionCode</code>.</p>
+
+<p>Далее идут три похожих свойства: <strong>compileSdkVersion</strong>, <strong>minSdkVersion</strong> и <strong>targetSdkVersion</strong> – это всё про версии Android.</p>
+
+<h3 id="разные-версии-android">Разные версии Android…</h3>
+
+<p><strong>compileSdkVersion</strong> определяет версию Android, которая будет использоваться для того, чтобы скомпилировать код приложения. Для каждой версии Android в Android SDK есть свой файл <em>android.jar</em>, содержащий все классы и методы, имеющиеся в этой версии Android. Когда Java код приложения компилируется при помощи javac, в classpath добавляется этот android.jar и таким образом коду приложения становятся доступны все API из этой версии Android. При просмотре Android API Reference обратите внимание – для каждого класса или метода есть указание, в какой версии Android этот класс или метод появился. Например, метод <code class="highlighter-rouge">View.setTranslationZ(float)</code> появился в API Level 21:</p>
+
+<p><img src="img/0610_added_in_api_level.png" width="800px" /></p>
+
+<p>Если метод появился в API Level 21, это значит, что для того, чтобы использовать его в коде приложения, нужно установить значение compileSdkVersion 21 или выше.</p>
+
+<p><strong>minSdkVersion</strong> определяет минимальную версию Android, на которой приложение может быть установлено и запущено. Этот параметр вы указывали при создании приложения в Android Studio. С точки зрения простоты разработки, чем выще minSdkVersion, тем лучше – тогда разработчикам не придется заботиться о том, чтобы приложение правильно работало на старых версиях Android (обычно приложения лучше работают на более новых версиях Android – там меньше багов, меньше технических ограничений, чаще более мощные процессоры с большим объемом памяти и т.п.). Однако, увеличивая minSdkVersion, вы ограничиваете количество устройств, на которых будет работать приложение и уменьшаете его потенциальную аудиторию – а это плохо для бизнеса, в котором используется приложение. Поэтому приходится искать баланс между стоимостью поддeржки старых версий Android и потенциальной выгодой для бизнеса от расширения аудитории.</p>
+
+<p><strong>targetSdkVersion</strong> – это версия Android, для которой “предназначено” ваше приложение. Это значит, в общих чертах, что в процессе разработки вы продумывали работу приложения на этой версии Android, тестировали на ней, и гарантируете, что на targetSdkVersion версии Android ваше приложение работает хорошо, без багов – так, как задумывалось. Это нужно для того, чтобы в будущих версиях Android (которые еще не вышли, и про которые мы ничего не можем знать во время разработки приложения) наше приложение продолжало работать так, как мы задумывали, несмотря на то, что технологии могли измениться, поведение операционной системы могло измениться и, вообще говоря, по меркам будущих версий Android, наше сегодняшнее приложение может считаться написанным неправильно. Когда Android запускает приложение со старым targetSdkVesion, он может принять дополнительные меры для того, чтобы приложение работало правильно – запустить его в особом <em>compatibility</em> режиме. Указывая targetSdkVersion, мы фиксируем набор правил и поведение операционной системы, которые действительны для этой версии Android, и таким образом мы можем больше не заботиться о поддержке более новых версий Android. Впрочем, Google может не дать нам расслабиться – иногда в магазине приложений Google Play появляются ограничения на использование старых версий в <strong>targetSdkVersion</strong>. Например, c 1 авгутста 2018 года в Google Play нельзя публиковать новые приложения с targetSdkVersion меньше 26 (а с 1 ноября 2018 – и обновления старых приложений). Это заставило всех разработчиков оптимизировать их приложения под Android 8.0 (самое сложное – пришлось переписать работу фоновых сервисов).</p>
+
+<h3 id="build-types">Build Types</h3>
+
+<p>В дефолтном сгенерированном build скрипте есть раздел <strong>buildTypes</strong>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>buildTypes {
+    release {
+        minifyEnabled false
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+}
+</code></pre></div></div>
+
+<p>В Android проекте есть два стандартных типа сборки: release и debug.</p>
+
+<p>По умолчанию в Android Studio используется тип сборки <strong>debug</strong>. Эта сборка предназначена для того, чтобы отлаживать её – в ней может делаться меньше оптимизаций, добавляться больше отладочной информации, могут включаться специальные режимы работы, удобные для тестирования, логирование и пр. Debug сборки <em>не предназначены для пользователей</em>, и их нельзя публиковать и распространять через магазины приложений. Внутри <code class="highlighter-rouge">buildTypes</code> дефолтного build скрипта блок <em>debug</em> отсутствует – просто потому, что для <em>debug</em> сборки используются все значения по умолчанию.</p>
+
+<p><strong>release</strong> сборка, наоборот, предназначена для пользователей. Она максимально оптимизирована, из неё удаляется всё лишнее, её нельзя отлаживать при помощи дебаггера. Кроме того, release сборка подписывается сертификатом разработчика для удостоверения её происхождения и обеспечения целостности (чтобы злоумышленники не могли распространять свои зловреды под видом популярных приложений). Настройки <em>minifyEnabled</em> и <em>proguardFiles</em> относятся к процессу минификации: при сборке релизной версии приложения, её код проходит стадию минификации – лишний неиспользуемый код удаляется, Java имена сокращаются. Это позволяет уменьшить размер кода и немного ускорить его загрузку, но сильно усложняет отладку.</p>
+
+<h2 id="сборка-проекта">Сборка проекта</h2>
+
+<p>После того, как вы собрали приложение в Android Studio, в проекте появляется папка <code class="highlighter-rouge">app/build</code> (если бы было несколько модулей, то в каждом модуле появилась бы папка <code class="highlighter-rouge">build</code>). В ней содержатся результаты сборки и промежуточные файлы.</p>
+
+<h3 id="apk-файл">APK файл</h3>
+
+<p>Собранный <strong>APK файл</strong> приложения находится в <code class="highlighter-rouge">app/build/outputs/apk/debug/app-debug.apk</code> (для дебажной сборки) – именно этот файл устанавливается на устройство, когда вы запускаете приложение из Android Studio. Его можно даже открыть и посмотреть его содержимое:</p>
+
+<p><img src="img/0620_apk_content.png" width="1200px" /></p>
+
+<p>Внутри APK файла можно найти:</p>
+
+<ul>
+  <li><strong>AndroidManifest.xml</strong> – манифест приложения, по которому операционная система узнает о структуре приложения.</li>
+  <li><strong>classes.dex</strong> – исходный код, скомпилированный в специальны Dalvik byte code и упакованный в DEX (Dalvik EXecutable) файл</li>
+  <li><strong>resources.arsc</strong> – значения всех ресурсов приложения, упакованные в один файл</li>
+  <li><strong>res</strong> – папка с более сложными ресурсами, которые хранятся в отдельных файлах (картинки, файлы верстки)</li>
+  <li><strong>META-INF</strong> – папка со служебной информацией, в первую очередь – с подписями всех файлов.</li>
+</ul>
+
+<p>Все XML файлы, которые можно увидеть внутри APK файла при помощи Android Studio, на самом деле хранятся в оптимизированном бинарном формате, который занмает меньше места и быстрее парсится в рантайме.</p>
+
+<p><em>Примечание: если вы собираете и запускаете приложение в Android Studio, но не находите APK файл в папке <code class="highlighter-rouge">app/build/outputs/apk/debug/</code> – отключите <strong>Instant Run</strong> в настройках Android Studio.</em></p>
+
+<p>Внутри <code class="highlighter-rouge">app/build</code> особый интерес представляет папка <strong>generatedJava</strong> – здесь находятся исходники (Java файлы), которые были автоматически сгенерированы во время сборки приложения. Мы эти исходники не писали, но мы можем их использовать в своем коде, и часто это даже необходимо.</p>
+
+<h3 id="r-файл">R файл</h3>
+
+<p>Наиболее часто используемый файл из generatedJava – это <strong>R-файл</strong>. R-файл это Java класс с именем <code class="highlighter-rouge">R</code> в Java пакете, имя которого указано в манифесте приложения в атрибуте <code class="highlighter-rouge">package</code> элемента <code class="highlighter-rouge">manifest</code>. В этом файле определены константы с  идентификаторами всех ресурсов приложения, которые используются для доступа к ресурсам. Например, в <code class="highlighter-rouge">HelloWorldActivity</code> мы писали такой код:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>setContentView(R.layout.activity_hello_world);
+</code></pre></div></div>
+
+<p>А вот как выглядит определение константы <code class="highlighter-rouge">activity_hello_world</code> в R-файле (код других констант опущен):</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">ru</span><span class="p">.</span><span class="n">ok</span><span class="p">.</span><span class="n">technopolis</span><span class="p">.</span><span class="n">helloworld</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="n">final</span> <span class="n">class</span> <span class="n">R</span> <span class="p">{</span>
+
+	<span class="k">public</span> <span class="n">static</span> <span class="n">final</span> <span class="n">class</span> <span class="n">layout</span> <span class="p">{</span>
+    	<span class="k">public</span> <span class="n">static</span> <span class="n">final</span> <span class="n">int</span> <span class="n">activity_hello_world</span><span class="p">=</span><span class="m">0x7f09001e</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><img src="img/0630_r_file.png" width="1200px" /></p>
+
+<p>Значения констант в R файле могут меняться от сборки к сборке, поэтому на конкретные значения никогда нельзя полагаться, зато можно считать, что они все уникальные – это гарантировано в рамках одного приложения.</p>
+
+<h3 id="buildconfig-файл">BuildConfig файл</h3>
+
+<p>Второй полезный файл из generateJava – это класс <strong>BuildConfig</strong>. В нем определены константы с информацией о сборке приложения, взятые из <code class="highlighter-rouge">build.gradle</code> во время сборки.</p>
+
+<p>Так выглядит <code class="highlighter-rouge">BuildConfig</code> для дебажной сборки в <code class="highlighter-rouge">app/build/generated/source/buildConfig/debug/</code>:</p>
+
+<p><img src="img/0640_build_config_debug.png" width="800px" /></p>
+
+<p>А так – <code class="highlighter-rouge">BuildConfig</code> для релизной сборки в <code class="highlighter-rouge">app/build/generated/source/buildConfig/release/</code>:</p>
+
+<p><img src="img/0650_build_config_release.png" width="800px" /></p>
+
+<p>Константа <code class="highlighter-rouge">DEBUG</code> полезна для того, чтобы в коде выполнять разные действия в релизной или дебажной сборке: например, в случае непредвиденной ситуации в дебаге можно бросить исключение, чтобы обнаружить эту ситуацию как можно раньше на этапе разработки, а в релизной версии бросать исключение нельзя (чтобы не расстраивать пользователя) – лучше тихо отправить логи в сервис сбора аналитики:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if (что-то неправильное случилось) {
+	if (BuildConfig.DEBUG) {
+    	throw new RuntimeException("Передайте Пете из команды Васи, что его API не работает, как он обещал");
+
+    } else {
+    	Crashlytics.log(Log.ERROR, "API", "Unexpected data format returned from API user.getFriends: " + data);
+        // TODO: сообщить пользователю об ошибке или можно забить?
+    }
+}
+</code></pre></div></div>
+
+<p>В <code class="highlighter-rouge">BuildConfog</code> можно добавлять свои собственные константы. Для этого нужно добавить определение константы в <code class="highlighter-rouge">build.gradle</code>, и они будут добавлены статическими полями в класс <code class="highlighter-rouge">BuildGradle</code> во время сборки:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>android {
+
+	defaultConfig {
+    	buildConfigField "boolean", "FEATURE_X_ENABLED", "true"
+    }
+
+    buildTypes {
+    	release {
+        	buildConfigField "int", "MAX_VCALL_PARTICIPANTS", "100"
+            buildConfigField "String", "PORTAL_ADDRESS", '"https://www.portal.info"'
+        }
+
+        debug {
+        	buildConfigField "int", "MAX_VCALL_PARTICIPANTS", "3"
+            buildConfigField "String", "PORTAL_ADDRESS", '"http://127.0.0.1:4000"'
+        }
+    }
+}
+</code></pre></div></div>
+
+<p>Это самый простой и эффективный способ конфигурировать разные версии приложения внешними параметрами.</p>
+
+<h2 id="логирование">Логирование</h2>
+
+<p>В Android есть единый системный лог, в который попадают сообщения от всех компонентов системы и от всех приложений. Инструмент для просмотра логов называется <strong>Logcat</strong> – он встроен а в Android Studio, и для него есть одноименное окно, в котором можно просматривать логи:</p>
+
+<p><img src="img/0660_logcat.png" width="1000px" /></p>
+
+<p>Logcat работает в режиме реального времени – вы можете видеть логи, которые печатаются прямо сейчас или были напечатаны недавно (благодаря небольшому кольцевому буферу, который есть в операционной системе Android), но вы не можете поднять логи за вчера  – они никуда не записываются. Поэтому логи в Android – это в первую очередь инструмент отладки, который используется в процессе разработки приложения, а не журнал, по которому можно восстановить историю событий за прошедшее время.</p>
+
+<p>Приложения могут писать в логи при помощи стандартного класса <code class="highlighter-rouge">android.util.Log</code>, в котором есть набор методов для печати сообщений в лог с разным приоритетом. Вот базовый список методов в порядке убывания приоритета:</p>
+
+<p><img src="img/0670_log_methods.png" width="600px" /></p>
+
+<p>Первый параметр – всегда тэг. Обычно это строковая константа, по которой потом можно найти интересующие нас сообщения в логах. Использование <code class="highlighter-rouge">Log</code> в коде обычно выглядит так:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    private static final boolean LOG = true;
+    private static final String LOG_TAG = "Hello";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        if (LOG) Log.d(LOG_TAG, "HelloWorldActivity.onCreate");
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_hello_world);
+    }
+</code></pre></div></div>
+
+<p>При выполнении этого кода в момент старта активности <code class="highlighter-rouge">HelloWorldActivity</code> в лог будет напечатано такое сообщение:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2019-01-25 12:06:20.919 29747-29747/ru.ok.technopolis.helloworld D/Hello: HelloWorldActivity.onCreate
+</code></pre></div></div>
+
+<p>Оно содержит точное время, ID юзера (<code class="highlighter-rouge">29747</code>), процесса (<code class="highlighter-rouge">29747</code>) и приложения (<code class="highlighter-rouge">ru.ok.technopolis.helloworld</code>), из которого пришел лог, метка приоритета <code class="highlighter-rouge">D</code>, тэг <code class="highlighter-rouge">Hello</code> и собственно сообщение. В окне Logcat в Android Studio можно осуществлять поиск по логам, фильтровать по произвольной подстроке и по приоритету и таким образом видеть только те логи, которые вас интересуют в данный момент.</p>
+
+<p>Добавлять логи в код приложения, в разные критические или просто неочевидные места, и особенно там, где происходит какая-то ошибка – хорошая привычка, которую желательно выработать. Большую часть времени добавленные логи не пригождаются, но иногда с вашим приложением происходит что-то странное, и только логи могут помочь разобраться.</p>
+
+<p>Обратите внимание на то, как метод логирования вызывается под условием:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if (LOG) Log.d(...)
+</code></pre></div></div>
+
+<p>Использование константы <code class="highlighter-rouge">LOG</code> необходимо по двум причинам:</p>
+
+<ul>
+  <li>Можно включить или выключить все логи сразу, изменив одну константу.</li>
+  <li>В выключенном состоянии выражение <code class="highlighter-rouge">if (LOG)</code> эквивалентно <code class="highlighter-rouge">if (false)</code>, и Java компилятор полностью вырежет весь код, следующий за условием. В релизной версии, в которой обычно логи выключены, это то, что нам нужно – избавиться от лишнего неиспользуемого кода. Для того, чтобы это работало, константа <code class="highlighter-rouge">LOG</code> должна быть определена именно константой (<code class="highlighter-rouge">static final</code>).</li>
+</ul>
+
+<p>Удобнее всего определять константу <code class="highlighter-rouge">LOG</code> при помощи <code class="highlighter-rouge">BuildConfig</code>. Для этого надо написать следующее в <code class="highlighter-rouge">build.gradle</code> приложения:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>buildTypes {
+
+    release {
+    	// ...
+    	buildConfigField "boolean", "LOG", "false"
+    }
+
+    debug {
+    	// ...
+    	buildConfigField "boolean", "LOG", "true"
+    }
+
+}
+</code></pre></div></div>
+
+<p>и в коде использовать <code class="highlighter-rouge">BuildConfig.LOG</code> – это будет одна константа на все приложение:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if (BuildConfig.LOG) Log...
+</code></pre></div></div>
+
+<h2 id="падение-приложения">Падение приложения</h2>
+
+<p>Когда при выполнении кода приложения выбрасывается исключение, которое никто не ловит, приложение падает – выполнение кода прекращается, виртуальная машина останавливается и процесс приложения завершается. Это называется <strong>крэш</strong> (crash). Пользователь при этом видит системное сообщение о том, что приложение упало:</p>
+
+<p><img src="img/0680_force_close.png" width="400px" /></p>
+
+<p>а в лог при этом печатается сообщение о падении со стек трейсом, по которому можно понять, что и где в коде приложения пошло не так.</p>
+
+<p>Для примера попробуем изменить код <code class="highlighter-rouge">HelloWorldActivity</code> так, чтобы он упал: при вызове <code class="highlighter-rouge">setContentView</code> из метода <code class="highlighter-rouge">onCreate</code> замените идентификатор файла верстки <code class="highlighter-rouge">R.layout.activity_hello_world</code> на идентификатор строки <code class="highlighter-rouge">R.string.hello_world</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        if (LOG) Log.d(LOG_TAG, "HelloWorldActivity.onCreate");
+        super.onCreate(savedInstanceState);
+        setContentView(R.string.hello_world);
+    }
+</code></pre></div></div>
+
+<p>Это неправильное использование метода <code class="highlighter-rouge">setContentView</code> – строка совершенно не подходит для того, чтобы из нее загрузили верстку – поэтому приложение упадет при старте. В логе мы увидим следующее:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2019-01-25 13:14:02.357 32761-32761/ru.ok.technopolis.helloworld E/AndroidRuntime: FATAL EXCEPTION: main
+    Process: ru.ok.technopolis.helloworld, PID: 32761
+    java.lang.RuntimeException: Unable to start activity ComponentInfo{ru.ok.technopolis.helloworld/ru.ok.technopolis.helloworld.HelloWorldActivity}: android.content.res.Resources$NotFoundException: File Здравствуй, Мир! from xml type layout resource ID #0x7f0b002c
+        at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2913)
+        at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048)
+        at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78)
+        at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108)
+        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68)
+        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808)
+        at android.os.Handler.dispatchMessage(Handler.java:106)
+        at android.os.Looper.loop(Looper.java:193)
+        at android.app.ActivityThread.main(ActivityThread.java:6669)
+        at java.lang.reflect.Method.invoke(Native Method)
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858)
+     Caused by: android.content.res.Resources$NotFoundException: File Здравствуй, Мир! from xml type layout resource ID #0x7f0b002c
+        at android.content.res.ResourcesImpl.loadXmlResourceParser(ResourcesImpl.java:1192)
+        at android.content.res.Resources.loadXmlResourceParser(Resources.java:2157)
+        at android.content.res.Resources.getLayout(Resources.java:1155)
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:421)
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:374)
+        at com.android.internal.policy.PhoneWindow.setContentView(PhoneWindow.java:420)
+        at android.app.Activity.setContentView(Activity.java:2771)
+        at ru.ok.technopolis.helloworld.HelloWorldActivity.onCreate(HelloWorldActivity.java:16)
+        at android.app.Activity.performCreate(Activity.java:7136)
+        at android.app.Activity.performCreate(Activity.java:7127)
+        at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1271)
+        at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2893)
+        at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048) 
+        at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78) 
+        at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108) 
+        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68) 
+        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808) 
+        at android.os.Handler.dispatchMessage(Handler.java:106) 
+        at android.os.Looper.loop(Looper.java:193) 
+        at android.app.ActivityThread.main(ActivityThread.java:6669) 
+        at java.lang.reflect.Method.invoke(Native Method) 
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493) 
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858) 
+     Caused by: java.io.FileNotFoundException: Здравствуй, Мир!
+        at android.content.res.AssetManager.nativeOpenXmlAsset(Native Method)
+        at android.content.res.AssetManager.openXmlBlockAsset(AssetManager.java:957)
+        at android.content.res.ResourcesImpl.loadXmlResourceParser(ResourcesImpl.java:1176)
+        at android.content.res.Resources.loadXmlResourceParser(Resources.java:2157) 
+        at android.content.res.Resources.getLayout(Resources.java:1155) 
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:421) 
+        at android.view.LayoutInflater.inflate(LayoutInflater.java:374) 
+        at com.android.internal.policy.PhoneWindow.setContentView(PhoneWindow.java:420) 
+        at android.app.Activity.setContentView(Activity.java:2771) 
+        at ru.ok.technopolis.helloworld.HelloWorldActivity.onCreate(HelloWorldActivity.java:16) 
+        at android.app.Activity.performCreate(Activity.java:7136) 
+        at android.app.Activity.performCreate(Activity.java:7127) 
+        at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1271) 
+        at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2893) 
+        at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048) 
+        at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78) 
+        at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108) 
+        at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68) 
+        at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808) 
+        at android.os.Handler.dispatchMessage(Handler.java:106) 
+        at android.os.Looper.loop(Looper.java:193) 
+        at android.app.ActivityThread.main(ActivityThread.java:6669) 
+        at java.lang.reflect.Method.invoke(Native Method) 
+        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493) 
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858) 
+2019-01-25 13:14:02.364 1895-2216/? W/ActivityManager:   Force finishing activity ru.ok.technopolis.helloworld/.HelloWorldActivity
+</code></pre></div></div>
+
+<p>Первое, что мы видим – это строка со словами <strong>FATAL EXCEPTION</strong> и идетнтификаторами упавшего приложения. Так (почти) всегда начинается сообщение о падении приложения, и если вам надо быстро найти в логе крэш, то проще всего искать его по этим словам.</p>
+
+<p>Затем идет сообщение о непойманном исключении со стэк трейсом – то, что позволит нам найти причину падения. Обычно в стек трейсе можно найти ссылки на код приложения, который привел к ошибке, и в первую очередь нам надо их найти по имени Java пакета, который мы используем в нашем приложении (<code class="highlighter-rouge">ru.ok.technopolis.helloworld</code>). Часто стек трейс состоит из нескольких частей, каждая из которых начинается со слов <code class="highlighter-rouge">Caused by</code> – это говорит о том, что исключение несколько раз ловилось в различных местах в коде, но не было обработано, а было обернуто в новый тип исключения и проброшено дальше. Вы быстро научитесь ориентироваться в стек трейсах, но если поиск нужной строчки вызывает затруднения, то можно действовать так:</p>
+
+<ul>
+  <li>найдите последнюю часть стек трейса, начинающуюся со слов <code class="highlighter-rouge">Сaused by</code></li>
+  <li>начинайте просматривать трейс сверху вниз</li>
+  <li>ищите первую строчку, принадлежащую вашему коду.</li>
+</ul>
+
+<p>Найденная строчка, возможно, и является причиной падения. В данном случае мы находим строчку</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>at ru.ok.technopolis.helloworld.HelloWorldActivity.onCreate(HelloWorldActivity.java:16) 
+</code></pre></div></div>
+
+<p>Это то самое место, в котором мы сделали неправильный вызов <code class="highlighter-rouge">setContentView</code>.</p>
+
+<h2 id="отладка-дебаггером">Отладка дебаггером</h2>
+
+<h2 id="лишние-файлы">Лишние файлы</h2>
+
+<h2 id="сборка-проекта-из-командной-строки--gradle">Сборка проекта из командной строки – Gradle</h2>
+
+<h2 id="запуск-приложения-из-командной-строки--adb">Запуск приложения из командной строки – ADB</h2>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

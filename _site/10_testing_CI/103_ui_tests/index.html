@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>UI тесты | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="UI тесты" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/10_testing_CI/103_ui_tests/" />
+<meta property="og:url" content="http://localhost:4000/10_testing_CI/103_ui_tests/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/10_testing_CI/103_ui_tests/","headline":"UI тесты","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>UI или e2e тесты применяются когда нам нам надо протестировать сложные сценарии, схожие с тем как бы вел себя пользователь
+в приложении. Для этого используется Эмулятор или реальное Android устройство.</p>
+
+<h2 id="фреймворки-для-e2e-тестирования">Фреймворки для e2e тестирования.</h2>
+<p>Условно фреймворки можно разделить на два лагеря:</p>
+<ol>
+  <li>Использующие WebDriver Protocol. Это <strong>Appium</strong></li>
+  <li>Использующие инструменты от гугла. <strong>UIAutomator</strong>, <strong>Espresso</strong>.</li>
+</ol>
+
+<h2 id="appium">Appium</h2>
+<p>Про этот фреймворк долго рассказывать не буду ибо мало пользовался им.</p>
+
+<p>Appium это HTTP сервер, который ожидает соединений от клиентов, которые говорят какие сейчас нужны сессии, с какими устройствами
+и какие тесты надо прогнать. Основная причина популярности Appium’а в том, что он использует тот же протокол, что и
+Selenium. Из-за этого порог вхождения в него для тестировщиков, которые занимались Web’ом сильно ниже.</p>
+
+<p><img src="img/appium.png" width="1200px" />
+На диаграме выше показано взаимодействие клиента и Appium сервера.
+Клиент отправляет запрос серверу по HTTP. Сервер создает сессию с устройством и устанавливает, и запускает APK.
+Далее команды теста передаются через Appium сервер в bootstrap.jar. UIAutomator/Selendroid драйвер 
+Здесь, bootstrap.jar играет роль TCP-сервера, который мы можем использовать, чтобы отправлять команды. 
+Команды, в свою очередь выполняются на Android-устройстве средствами Selendroid или UIAutomator.</p>
+
+<p>Плюсы:</p>
+<ol>
+  <li>Есть дополнительный уровень абстракции для команд UIAutomator’а. Если контракт методов изменится, то не надо будет
+переписывать тесты, т.к. Аппиум драйвер возьмет на себя миграцию на новые методы.</li>
+  <li>Можно писать тесты почти на любом языке.</li>
+  <li>Низкий порог вхождения для тех, кто имел дело с Selenium’ом.</li>
+  <li>Не ограничены процессом приложения.</li>
+  <li>Кросс-платформенность, можно под IOS тесты писать.</li>
+</ol>
+
+<p>Минусы:</p>
+<ol>
+  <li>Реализация оберток (аппиум-драверов) не реализует все методы.</li>
+  <li>Нет доступа к коду приложения.</li>
+  <li>Дополнительные уровни абстракции замедляют выполнение тестовых команд.</li>
+  <li>Проблемы с синхронизацией потоков.</li>
+</ol>
+
+<h2 id="uiautomator-robotium">UIAutomator, Robotium</h2>
+<p>UIAutomator был первым фреймворком автоматизации созданным компанией Google.
+Для его работы надо было упаковать тетсы и ранннер в отдельную APK и запустить на устройстве.
+Сейчас ему на смену UIAutomator2.
+Robotium спользовался как удобная обертка вокруг UIAutomator’а и до появления  Espresso многие пользовались ей.</p>
+
+<p>Плюсы:</p>
+<ol>
+  <li>Можно автоматизировать любой компонент Операционной системы и приложения, как это делал бы пользователь.</li>
+  <li>Не ограничены процессом приложения.</li>
+</ol>
+
+<p>Минусы:</p>
+<ol>
+  <li>Более долгая подготовка теста. Надо дополнительно собрать APK с тестами.</li>
+  <li>Скудное АПИ у UIAutomator’а.</li>
+  <li>Проблемы с синхронизацией потоков.</li>
+</ol>
+
+<h2 id="espresso">Espresso</h2>
+<p><strong>UIAutomator</strong> и <strong>Espresso</strong> - это часть <strong>Android Testing Support library</strong>.
+Espresso фреймворк тесно взаимодействует с приложением и можно вызывать код приложения из тестов и берет заботу о синхронизации
+на себя. Дальше мы будем говорить об <strong>Espresso</strong>.</p>
+
+<p>Плюсы:</p>
+<ol>
+  <li>Удобное API для написания тестов.</li>
+  <li>Синхронизация из коробки.</li>
+  <li>Можно обращаться к коду приложения.</li>
+</ol>
+
+<p>Минусы:</p>
+<ol>
+  <li>Более долгая подготовка теста. Надо дополнительно собрать APK с тестами.</li>
+  <li>Доступ только к приложению, вне процесса приложения Espresso ходить не может.</li>
+</ol>
+
+<h2 id="где-лежат-ui-тесты">Где лежат UI тесты</h2>
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sourceSets</span> <span class="o">{</span>
+        <span class="n">androidTest</span> <span class="o">{</span>
+            <span class="n">java</span><span class="o">.</span><span class="na">srcDirs</span> <span class="o">=</span> <span class="o">[</span><span class="s1">'src/androidTest/java'</span><span class="o">]</span>
+            <span class="n">assets</span><span class="o">.</span><span class="na">srcDirs</span> <span class="o">=</span> <span class="o">[</span><span class="s1">'assets-androidTest'</span><span class="o">]</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p>Библиотеки подключаются в:</p>
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">androidTestImplementation</span> <span class="s1">'androidx.test:runner:1.1.1'</span>
+    <span class="n">androidTestImplementation</span> <span class="s1">'androidx.test.espresso:espresso-core:3.1.1'</span>
+    <span class="n">androidTestImplementation</span> <span class="s1">'androidx.test.ext:junit:1.1.0'</span>
+    <span class="n">androidTestImplementation</span> <span class="s2">"androidx.test:rules:1.1.1"</span>
+    <span class="n">androidTestImplementation</span> <span class="s1">'androidx.test.espresso:espresso-intents:3.1.1'</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Также мы должны указать какой раннер будет использоваться:</p>
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">android</span> <span class="o">{</span>
+    <span class="n">defaultConfig</span> <span class="o">{</span>
+        <span class="n">testInstrumentationRunner</span> <span class="s2">"androidx.test.runner.AndroidJUnitRunner"</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="простой-тест-для-сохраненеия-и-проверки-настроек">Простой тест для сохраненеия и проверки настроек</h2>
+<p>Напишем тест, который бы повторял действия пользователя. Надо будет нажать на <code class="highlighter-rouge">Settings</code>.
+Заполнить поля логина и email’а и потом сохранить.
+Для проверки исправим имя пользователя и нажмем <code class="highlighter-rouge">Revert</code> имя должно остаться таким же.
+<img src="img/espresso_test.png" width="1200px" />
+Пример можно посмотреть в <code class="highlighter-rouge">ru.android2019.testingexample.RevertSettingsTest</code></p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RevertSettingsTest</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">ANTON</span> <span class="o">=</span> <span class="s">"Anton"</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">EMAIL</span> <span class="o">=</span> <span class="s">"email@exmple.com"</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">SOMETHING_WRONG</span> <span class="o">=</span> <span class="s">"Something wrong"</span><span class="o">;</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">saveSettingsTest</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">//Переходим в Settings</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">settings</span><span class="o">)).</span><span class="na">perform</span><span class="o">(</span><span class="n">click</span><span class="o">());</span>
+        
+        <span class="c1">//вбиваем имя</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">userNameInput</span><span class="o">)).</span><span class="na">perform</span><span class="o">(</span><span class="n">typeText</span><span class="o">(</span><span class="n">ANTON</span><span class="o">),</span> <span class="n">closeSoftKeyboard</span><span class="o">());</span>
+        <span class="c1">//вбиваем email</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">emailInput</span><span class="o">)).</span><span class="na">perform</span><span class="o">(</span><span class="n">typeText</span><span class="o">(</span><span class="n">EMAIL</span><span class="o">),</span> <span class="n">closeSoftKeyboard</span><span class="o">());</span>
+        <span class="c1">//сохраняем</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">saveButton</span><span class="o">)).</span><span class="na">perform</span><span class="o">(</span><span class="n">click</span><span class="o">());</span>
+
+        <span class="c1">//Проверим, что имя откатывается обратно</span>
+        <span class="c1">//Изменяем имя</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">userNameInput</span><span class="o">)).</span><span class="na">perform</span><span class="o">(</span><span class="n">clearText</span><span class="o">()).</span><span class="na">perform</span><span class="o">(</span><span class="n">typeText</span><span class="o">(</span><span class="n">SOMETHING_WRONG</span><span class="o">),</span> <span class="n">closeSoftKeyboard</span><span class="o">());</span>
+        <span class="c1">//жмем Revert</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">revertButton</span><span class="o">)).</span><span class="na">perform</span><span class="o">(</span><span class="n">click</span><span class="o">());</span>
+        
+        <span class="c1">//Проверяем, что имя, такое какое надо.</span>
+        <span class="n">onView</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">userNameInput</span><span class="o">)).</span><span class="na">check</span><span class="o">(</span><span class="n">matches</span><span class="o">(</span><span class="n">withText</span><span class="o">(</span><span class="n">ANTON</span><span class="o">)));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Из примера видно, что апи для написания тестов очень простое.</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">onView</span><span class="o">(</span><span class="n">Matcher</span><span class="o">&lt;</span><span class="n">View</span><span class="o">&gt;)</span>
+            <span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">ViewAction</span><span class="o">);</span>
+
+<span class="n">onView</span><span class="o">(</span><span class="n">Matcher</span><span class="o">&lt;</span><span class="n">View</span><span class="o">&gt;).</span>
+            <span class="o">.</span><span class="na">check</span><span class="o">(</span><span class="n">ViewAssertion</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>Эспрессо намеренно не дает доступ к <code class="highlighter-rouge">View</code>, позволяет работать только с <code class="highlighter-rouge">Matcher&lt;View&gt;</code> и  <code class="highlighter-rouge">ViewAction</code>, и <code class="highlighter-rouge">ViewAssertion</code></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">testSomeStuff</span><span class="o">(){</span>
+    <span class="n">onVew</span><span class="o">(...).</span><span class="na">viewFinder</span><span class="o">.</span><span class="na">getView</span><span class="o">()</span> <span class="c1">//так делать не надо</span>
+    
+    <span class="n">View</span> <span class="n">myView</span> <span class="o">=</span> <span class="n">mActivityRule</span><span class="o">.</span><span class="na">getActivity</span><span class="o">().</span><span class="na">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">myView</span><span class="o">);</span> <span class="c1">//так тоже не стоит делать</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h2 id="ожидания-в-espresso">Ожидания в Espresso</h2>
+<p>Espresso берет на себя большую часть работы по ожиданию того, что сейчас подходящее время для выполнения действия.
+Как выполняется синхронизация при выполнении действия в Espresso. Можно посмотреть в <code class="highlighter-rouge">ViewInteraction.java</code></p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">doPerform</span><span class="o">(</span><span class="kd">final</span> <span class="n">SingleExecutionViewAction</span> <span class="n">viewAction</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">runSynchronouslyOnUiThread</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">(){</span>
+           <span class="c1">//Проверяем что в очереди на  UI потоке нет сообщений</span>
+           <span class="n">uiController</span><span class="o">.</span><span class="na">loopMainThreadUntilIdle</span><span class="o">();</span>
+
+           <span class="c1">//пытаемся сматчить вью в иерархии вьюх</span>
+            <span class="n">View</span> <span class="n">targetView</span> <span class="o">=</span> <span class="n">viewFinder</span><span class="o">.</span><span class="na">getView</span><span class="o">();</span>
+
+            <span class="c1">//производим действие над View</span>
+            <span class="n">viewAction</span><span class="o">.</span><span class="na">perform</span><span class="o">(</span><span class="n">uiController</span><span class="o">,</span> <span class="n">targetView</span><span class="o">);</span>
+
+        <span class="o">});</span>
+
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p>На картинке показано из чего состоит метод <code class="highlighter-rouge">loopMainThreadUntilIdle()</code>
+<img src="img/loop_until_idle.png" width="1200px" /></p>
+
+<p>Другими словами Эспрессо дожидается выполнения всех <code class="highlighter-rouge">BackGround</code> таск в AsyncTask’ах и AsyncTaskCompat’ах а потом проверят
+очередь UI потока и дожидается чтобы она была пуста. Пуста означает, что следующее сообщение будет не раньше чем через 15 ms.
+<img src="img/queue.png" width="1200px" /></p>
+
+<p>Если операция выполняется не в AsyncTask’е или слишком далеко в очереди UI потока, то для нее надо писать IdlingResource,
+который будет дожидаться нужного события. Для этого надо реализовать интерфейс <code class="highlighter-rouge">IdlingResource</code></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SimpleIdlingResource</span> <span class="kd">implements</span> <span class="n">IdlingResource</span> <span class="o">{</span>
+
+    <span class="nd">@Nullable</span> <span class="kd">private</span> <span class="kd">volatile</span> <span class="n">ResourceCallback</span> <span class="n">mCallback</span><span class="o">;</span>
+
+    <span class="c1">// Возвращаем это поле, когда происходт проверка Idle ли сейчас ресурс.</span>
+    <span class="kd">private</span> <span class="n">AtomicBoolean</span> <span class="n">mIsIdleNow</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicBoolean</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+
+    <span class="c1">//Имя необходимо, т.к. нужно обязательно регистрировать ресурс в Registry.</span>
+    <span class="c1">//Иначе проверки не будет.</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getName</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="c1">//После регистрации ресурса будет опрашиваться этот метод до тех пор пока не</span>
+    <span class="c1">//вернет true или не выйдет за границы setIdlingResourceTimeout и не выбросит IdlingResourceTimeoutException</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isIdleNow</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">mIsIdleNow</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="c1">//Это callback который Espresso устанавливает для информирования, что ресурс готов к переходу из busy в idle.</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">registerIdleTransitionCallback</span><span class="o">(</span><span class="n">ResourceCallback</span> <span class="n">callback</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mCallback</span> <span class="o">=</span> <span class="n">callback</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * Sets the new idle state, if isIdleNow is true, it pings the {@link ResourceCallback}.
+     * @param isIdleNow false if there are pending operations, true if idle.
+     */</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setIdleState</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">isIdleNow</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">mIsIdleNow</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">isIdleNow</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">isIdleNow</span> <span class="o">&amp;&amp;</span> <span class="n">mCallback</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">mCallback</span><span class="o">.</span><span class="na">onTransitionToIdle</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Чтобы эта магия начала работать надо зарегистрировать idlingResource, а когда он больше не нужен сделать unregister.</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">IdlingRegistry</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">register</span><span class="o">(</span><span class="n">mIdlingResource</span><span class="o">);</span>
+
+<span class="o">...</span>
+<span class="n">IdlingRegistry</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">unregister</span><span class="o">(</span><span class="n">mIdlingResource</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>Как было сказано ранее у Espresso есть таймауты для IdlingResource и uiController.loopUntil()</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">IdlingPolicies</span> <span class="o">{</span>
+    <span class="c1">//Указывает сколько надо ждать очередь в главном потоке, прежде чем выпасть по таймауту</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">setMasterPolicyTimeout</span><span class="o">(</span><span class="kt">long</span> <span class="n">timeout</span><span class="o">,</span> <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">)</span> 
+    
+    <span class="c1">//Устанавливает таймаут для IdlingResources</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">setIdlingResourceTimeout</span><span class="o">(</span><span class="kt">long</span> <span class="n">timeout</span><span class="o">,</span> <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">)</span> 
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="старт-activity">Старт Activity</h2>
+<p>Чтобы начать выполнять тесты в приложении его надо запустить.
+У Espresso есть несколько инструментов для этого. Первый из них - это <code class="highlighter-rouge">ActivityTestRule</code>. В простейшем случае он просто 
+запустит нужную <code class="highlighter-rouge">Activity</code> в приложении.</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MyActivity</span><span class="o">&gt;</span> <span class="n">testRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MyActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>Можно подготовить активити, потом запустить. Под подготовкой подразумевается например настройка дополнительных параметров для <code class="highlighter-rouge">Intent</code></p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MultipleIntentsTest</span> <span class="o">{</span>
+  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MyActivity</span><span class="o">&gt;</span> <span class="n">testRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MyActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+          <span class="kc">false</span><span class="o">,</span>    <span class="c1">// initialTouchMode (default is false)</span>
+          <span class="kc">false</span><span class="o">);</span>  <span class="c1">// launchActivity. Activity запустится при старте теста.</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testOscarGrouchy</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">Intent</span> <span class="n">grouchyIntent</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">();</span>
+    <span class="c1">// Настраиваем интент</span>
+    <span class="n">grouchyIntent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="s">"EXTRA_FLAG"</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+    <span class="n">testRule</span><span class="o">.</span><span class="na">launchActivity</span><span class="o">(</span><span class="n">grouchyIntent</span><span class="o">);</span>
+    <span class="c1">// Запускаем активити в экстра флагом</span>
+  <span class="o">}</span>
+  
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testOscarNotGrouchy</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">Intent</span> <span class="n">happyIntent</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">();</span>
+    <span class="c1">// intent stuff</span>
+    <span class="n">happyIntent</span><span class="o">.</span><span class="na">putExtra</span><span class="o">(</span><span class="s">"EXTRA_FLAG"</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+    <span class="n">testRule</span><span class="o">.</span><span class="na">launchActivity</span><span class="o">(</span><span class="n">happyIntent</span><span class="o">);</span>
+    <span class="c1">// Запускаем активити без экстра флага</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Вот как меняется порядок методов с разным способом вызова <code class="highlighter-rouge">ActivityTestRule</code> 
+<img src="img/launchactivitycomparison.png" width="1200px" /></p>
+
+<p>Второй способ запуска - это использовать <code class="highlighter-rouge">ActivityScenario</code></p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**
+     * {@link ActivityScenario используется для запуска и получения доступа к Activity.
+     * {@link ActivityScenario#onActivity(ActivityScenario.ActivityAction)} дает thread-safe
+     * механизм для доступа к Activity.
+     */</span>
+    <span class="nd">@Before</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">registerIdlingResource</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">ActivityScenario</span> <span class="n">activityScenario</span> <span class="o">=</span> <span class="n">ActivityScenario</span><span class="o">.</span><span class="na">launch</span><span class="o">(</span><span class="n">IdlingActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+        <span class="c1">//инициируем индлинг ресурс в активити.</span>
+        <span class="n">activityScenario</span><span class="o">.</span><span class="na">onActivity</span><span class="o">(</span><span class="k">new</span> <span class="n">ActivityScenario</span><span class="o">.</span><span class="na">ActivityAction</span><span class="o">&lt;</span><span class="n">IdlingActivity</span><span class="o">&gt;()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">perform</span><span class="o">(</span><span class="n">IdlingActivity</span> <span class="n">activity</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">mIdlingResource</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="na">getIdlingResource</span><span class="o">();</span>
+                <span class="c1">// To prove that the test fails, omit this call:</span>
+                <span class="n">IdlingRegistry</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">register</span><span class="o">(</span><span class="n">mIdlingResource</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">});</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="матчеры-и-локаторы">Матчеры и локаторы</h2>
+<p>Для поиска <code class="highlighter-rouge">id</code> элементов используется LayoutInspector, это удобнее чем искать <code class="highlighter-rouge">id</code> в <code class="highlighter-rouge">layout.xml</code>
+<img src="img/layout_inspector.png" width="1200px" /> 
+У Espresso обширная система готовых Matcher’ов.
+<img src="img/espresso-cheatsheet.png" width="1200px" /></p>
+
+<p>Их можно комбинировать. Это может понадобиться когда надо усилить матчер.</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">onView</span><span class="o">(</span><span class="n">allOf</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">my_view</span><span class="o">),</span> <span class="n">withText</span><span class="o">(</span><span class="s">"Hello!"</span><span class="o">)));</span>
+
+<span class="n">onView</span><span class="o">(</span><span class="n">allOf</span><span class="o">(</span><span class="n">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">my_view</span><span class="o">),</span> <span class="n">not</span><span class="o">(</span><span class="n">withText</span><span class="o">(</span><span class="s">"Unwanted"</span><span class="o">))));</span>
+</code></pre></div></div>
+
+<p>Иногда не найти подходящего матчера и приходится писать свой <code class="highlighter-rouge">testingexample.DatePickerTest</code>:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">public</span> <span class="kd">static</span> <span class="n">Matcher</span><span class="o">&lt;</span><span class="n">View</span><span class="o">&gt;</span> <span class="nf">matchesDate</span><span class="o">(</span><span class="kd">final</span> <span class="kt">int</span> <span class="n">year</span><span class="o">,</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">month</span><span class="o">,</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">day</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">BoundedMatcher</span><span class="o">&lt;</span><span class="n">View</span><span class="o">,</span> <span class="n">DatePicker</span><span class="o">&gt;(</span><span class="n">DatePicker</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="o">{</span>
+
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">describeTo</span><span class="o">(</span><span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">description</span><span class="o">.</span><span class="na">appendText</span><span class="o">(</span><span class="s">"matches date:"</span><span class="o">);</span>
+            <span class="o">}</span>
+
+            <span class="nd">@Override</span>
+            <span class="kd">protected</span> <span class="kt">boolean</span> <span class="nf">matchesSafely</span><span class="o">(</span><span class="n">DatePicker</span> <span class="n">item</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="o">(</span><span class="n">year</span> <span class="o">==</span> <span class="n">item</span><span class="o">.</span><span class="na">getYear</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="n">month</span> <span class="o">==</span> <span class="n">item</span><span class="o">.</span><span class="na">getMonth</span><span class="o">()</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">day</span> <span class="o">==</span> <span class="n">item</span><span class="o">.</span><span class="na">getDayOfMonth</span><span class="o">());</span>
+            <span class="o">}</span>
+        <span class="o">};</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="запуски-тестов">Запуски тестов</h2>
+<p>Самый простой способ запустить тесты это выбрать правой кнопкой нужный пакет и создать конфигурацию для тестов.
+<img src="img/run_test.png" width="1200px" />
+Из командной строки можно запустить как</p>
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">./</span><span class="n">gradlew</span> <span class="n">connectedCheck</span>
+
+<span class="c1">//если нужно запустить по классу</span>
+<span class="o">./</span><span class="n">gradlew</span> <span class="n">connectedCheck</span> <span class="o">-</span><span class="n">Pandroid</span><span class="o">.</span><span class="na">testInstrumentationRunnerArguments</span><span class="o">.</span><span class="na">class</span><span class="o">=</span><span class="n">ru</span><span class="o">.</span><span class="na">android2019</span><span class="o">.</span><span class="na">testingexample</span><span class="o">.</span><span class="na">idlingResourceSample</span><span class="o">.</span><span class="na">ChangeTextBehaviorTest</span>
+</code></pre></div></div>
+
+<p>Под капотом происходит следующее. Gradle таска:</p>
+<ol>
+  <li>Собирает Apk, которую будем тестировать.
+    <div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">./</span><span class="n">gradlew</span> <span class="n">assembleDebug</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Собирает Apk c тестами и раннером.
+    <div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">./</span><span class="n">gradlew</span> <span class="n">assembleAndroidTest</span>
+</code></pre></div>    </div>
+  </li>
+  <li>находит подключенные устройства к адб-серверу.
+    <div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">adb</span> <span class="n">devices</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Устанавливает их на все подключенные устройства.
+    <div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">adb</span> <span class="n">push</span>
+<span class="n">adb</span> <span class="n">shell</span> <span class="n">pm</span> <span class="n">install</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Потом запускает тесты
+    <div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">adb</span> <span class="n">shell</span> <span class="n">am</span> <span class="n">instrument</span> <span class="o">-</span><span class="n">w</span> <span class="o">-</span><span class="n">r</span>   <span class="o">-</span><span class="n">e</span> <span class="n">debug</span> <span class="kc">false</span> <span class="o">-</span><span class="n">e</span> <span class="kd">class</span> <span class="err">'</span><span class="nc">ru</span><span class="o">.</span><span class="na">android2019</span><span class="o">.</span><span class="na">testingexample</span><span class="o">.</span><span class="na">idlingResourceSample</span><span class="o">.</span><span class="na">ChangeTextBehaviorTest</span><span class="err">'</span> <span class="n">ru</span><span class="o">.</span><span class="na">android2019</span><span class="o">.</span><span class="na">testingexample</span><span class="o">.</span><span class="na">test</span><span class="o">/</span><span class="n">androidx</span><span class="o">.</span><span class="na">test</span><span class="o">.</span><span class="na">runner</span><span class="o">.</span><span class="na">AndroidJUnitRunner</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Собирает информацию и генерит отчет
+<img src="img/report.png" width="1200px" /></p>
+  </li>
+  <li>Удаляет приложения</li>
+</ol>
+
+<p>Espresso тесты запускаются в одном процессе с тестируемой апк, они запускаются в отдельном Instrumentation потоке
+<img src="img/processes.png" width="1200px" /> 
+<img src="img/threads.png" width="1200px" /></p>
+
+<h2 id="запуск-через-оркестратор">Запуск через оркестратор</h2>
+<p>Гугл не так давтно зарелизила оркестратор. Который, который решает следующие проблемы:</p>
+<ol>
+  <li>
+    <p>Борется с крешами в приложении. Если во время выполнения тестового сьюта приложение крэшнулось.
+МЫ не сможем продолжить выполнение оставшихся тестов, т.к. Intrumentation поток тоже завершится вместе с крашем приложения.</p>
+  </li>
+  <li>
+    <p>Оркестратор запускает новый инстанс приложения на каждый тест. Это позволяет очищать состояние приложения после кажого 
+теста.</p>
+  </li>
+</ol>
+
+<p><img src="img/how_tests_are_running.png" width="1200px" /></p>
+
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

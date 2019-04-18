@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Введение в жизненный цикл. | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Введение в жизненный цикл." />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/01_intro/014_hello_lifecycle/" />
+<meta property="og:url" content="http://localhost:4000/01_intro/014_hello_lifecycle/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/01_intro/014_hello_lifecycle/","headline":"Введение в жизненный цикл.","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В предыдущих уроках мы посзнакомились с устройством простого Android приложения, состоящего из одной-двух Activity, а сейчас на примере такого приложения посмотрим на то, как Android приложения запускаются, работают и завершают работу – как устроен их жизненный цикл, и, в частности, как устроен жизненный цикл одной отдельно взятой Activity, и что нам, разработчиком, нужно в связи с этим предпринимать.</p>
+
+<h2 id="что-такое-activity">Что такое Activity?</h2>
+
+<p>Activity является, пожалуй, важнейшим компонентом – кирпичиком, из которых, <em>с точки зрения операционной системы</em>, состоит Android приложение. В самом делел, Activity – это, в первом приближении, экран пользовательского интерфейса, а без какого-то интерфейса почти немыслимо представить себе полезное приложение.</p>
+
+<p>Это действительно так, но важно понимать, что то, что вы как разработчик считаете одним экраном приложения, и то, что считает экраном операционная система – это не одно и то же. А еще есть пользователи вашего приложения, и их представление об экранах тоже может отличаться. Каждый понимает под экраном что-то своё, что ему удобно считать экраном в рамках его задач, и нет какого-то чёткого определения, что такое экран.</p>
+
+<p>Дизайнеры мобильных приложений обычно рисуют все возможные состояния приложения, которые внешне отличаются друг от друга, и называют это разными экранами. Пример: одна из версий дизайна фоторедактора в приложении Одноклассники включает 32 изображения различных экранов. С точки зрения дизайнера, они разные: экран ввода текста, экран выбора цвета, экран кропа, экран поворота и т.д. А с точки зрения разработчика это один экран фоторедактора, который работает в разных режимах. В коде приложения это реализовано как одна Activity.</p>
+
+<p><img src="img/0700_design_screens.png" width="1200px" /></p>
+
+<p>Бывают обратные ситуации – когда с точки зрения любого человека, не знакомого с устройством приложения, кажется, что он видит один экран приложения, в котором происходят какие-то изменения, а на самом деле внутри это реализовано как два раных экрана, две Activity, между которыми происходит незаметный переход. Хотя, при желании, то же самое поведение можно было бы реализовать внутри одной Activity, и в некоторых аспектах это было бы даже проще.</p>
+
+<p><img src="img/transition4.gif" width="390px" /></p>
+
+<p>Итак, резюмируя: <strong>Activity не всегда однозначно соответствует отдельному экрану приложения.</strong> Бывает, что внутри одной Activity реализовано несколько экранов, и наоборот – один экран реализован несколькими Activity. Все зависит от взгляда на то, что такое экран.</p>
+
+<h3 id="activity-misuse-disclaimer">Activity misuse disclaimer</h3>
+
+<p>На заре Android разработки, когда перед разработчками была одна лишь документация по Android, в которой акцентировалась определяющая роль Activity как основного компонента, и еще не было сложившегося понимания о том, как должна быть устроена правильная архитектура Android приложения, многие Android разработчики использовали Activity как основу своего кода – внутри класса типа <code class="highlighter-rouge">Activity</code> был код, отвечающий за всё: за интерфейс, за загрузку данных, за логику работы приложения…</p>
+
+<p>Сейчас это не считается хорошей практикой, и в реальных проектах в классах типа <code class="highlighter-rouge">Activity</code> содержится только специфический код, отвечающий за общие свойства UI, за интеграцию приложения с операционной системой и взаимодействие с другими Activity и другими приложениями, но не за конкретный функционал приложения.</p>
+
+<p>Однако, в рамках нашего курса по Android разработке, мы часто будем писать код примеров внутри класса <code class="highlighter-rouge">Activity</code> – исключительно в целях максимальной простоты примеров там, где архитектура этого примера не имеет значения. Вообще, архитектура приложения, и роль Activity с точки зрения архитектуры – это отдельная тема, которая будет рассмотрена отдельно.</p>
+
+<h3 id="activity-как-контракт">Activity как контракт</h3>
+
+<p>Возможно, вы уже заметили, что при описании роли Activity я неоднократно использовал слова “с точки зрения операционной системы” – за этими словаи и скрывается главная суть Activity. Это контракт между операционной системой и приложением (такой, как, например, в Java заключен в методе main). Прописывая в манифесте приложения ваши Activity, вы определяете точки входа из операционной системы в пользовательский интерфейс вашего приложения. А интент-фильтры у Activity в манифесте определяют, при каких условиях и с какими параметрами данная Activity может быть запущена.</p>
+
+<p>Например, action MAIN и category LAUNCHER – это контракт, говорящий о том, что данная активность может быть просто запущена из домашнего экрана, когда пользователь кликнет на иконку приложения:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;activity android:name=".HelloWorldActivity"
+                  android:label="@string/activity_hello_world"
+                  android:taskAffinity="ru.ok.technopolis.helloworld.HelloWorld"&gt;
+    &lt;intent-filter&gt;
+        &lt;action android:name="android.intent.action.MAIN"/&gt;
+        &lt;category android:name="android.intent.category.LAUNCHER"/&gt;
+    &lt;/intent-filter&gt;
+&lt;/activity&gt;
+</code></pre></div></div>
+
+<p>а интент фильтр ниже говорит о том, что данная активность может быть использована для просмотра веб-страниц в домене <code class="highlighter-rouge">ok.ru</code>, и операционная система может запустить эту активность, когда пользователь кликнет где-нибудь на ссылку вида <a href="https://ok.ru/">https://ok.ru/</a>, при этом ссылка будет передана в виде параметра:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;activity android:name=".OdklActivity"&gt;
+	&lt;intent-filter&gt;
+    	&lt;action android:name="android.intent.action.VIEW"/&gt;
+        &lt;data android:host="ok.ru" android:scheme="http"/&gt;
+        &lt;data android:host="ok.ru" android:scheme="https"/&gt;
+    &lt;/intent-filter&gt;
+&lt;/activity&gt;
+</code></pre></div></div>
+
+<p>Есть большое число стандартных действий, типов данных и других параметров, которые можно исползовать для определения контракта Activity в интент-фильтрах, и каждое Android приложение определяет какие-то свои контракты: одно приложение умеет просматривать веб-страницы, другое умеет делать фото и снимать видео, третье умеет отправлять текстовые сообщения, а четвертое – отправлять емэйлы с аттачами и т.п.</p>
+
+<p>Обо всех таких своих способностях приложения заявляют в своих манифестах при помощи активностей. Одно приложение может запустить другое приложение при помощи интента – и это возможно только потому, что у другого приложения есть точка входа, описанная в его манифесте при помощи Activity и подходящего интент фильтра.</p>
+
+<p>Так в общих чертах и устроена вся экосистема Android приложений: есть много Activity из разных приложений, и все могут друг друга запускать, соблюдая некоторые контракты.</p>
+
+<p>Кроме интент-фильтров, которые определяют, как и когда ваща Activity может быть запущена, есть много других параметров activity, которые можно прописать в манифесте, которые определяют кучу разных свойств активности: как она будет отображаться в окне, будут ли видны системные навигационные кнопки, как активность будет отображаться в истории недавно запущенных приложений, как будет показываться системная клавиатура поверх окна вашей активности и многое другое – полный список всех параметров можно найти в документации по элементу <code class="highlighter-rouge">activity</code> манифеста:</p>
+
+<p>https://developer.android.com/guide/topics/manifest/activity-element</p>
+
+<p>Эту документацию можно использовать как начальный обзор всех возможностей Activity – просто кликаете на какой-нибудь параметр и читаете описание какого-нибудь функционала или технологии, которая за ним скрывается.</p>
+
+<h2 id="жизненный-цикл-activity">Жизненный цикл Activity</h2>
+
+<h3 id="запуск-activity">Запуск Activity</h3>
+
+<p>Жизнь отдельно взятого экземпляра Activity начинается в тот момент, когда операционная система (а точнее системный сервис <strong>ActivityManager</strong>) решает, что нужно запустить именно эту активность. Далее происходит следующее:</p>
+
+<ol>
+  <li>Если процесс приложения, которому принадлежит Activity, не запущен – запускается новый процесс, в этом процессе инициализируется и запускается виртуальная машина ART.</li>
+  <li>Создается экземпляр Activity при помощи <strong>дефолтного конструктора</strong>.</li>
+  <li>Создается <strong>окно</strong> – отдельный графический слой, в котором будет отрисовываться весь UI этой активности.</li>
+  <li>Вызывается <em>метод жизненного цикла</em> <code class="highlighter-rouge">onCreate</code>, в коде которого вызывается один из методов <code class="highlighter-rouge">setContentView</code> устанавливающий контент для окна активности</li>
+  <li>Вызывается <em>метод жизненного цикла</em> <code class="highlighter-rouge">onStart</code>, после чего Activity отображается на экране и становится <strong>видимой</strong></li>
+  <li>Вызывается <em>метод жизненного цикла</em> <code class="highlighter-rouge">onResume</code>, после чего Activity становится <strong>активной</strong></li>
+</ol>
+
+<p>Из этого небольшого протокола старта активности можно сделать несколько выводов. Первое – активности выполняются внутри процесса приложения, а если у одного приложения несколько активностей, то все они выполняются внутри одного и того же процесса. А это значит, что у них общая виртуальная машина, общий Java heap, общий загрузчик классов (Class Loader), и как следствие – общие статические поля классов. Есть исключение: вы можете явно попросить операционную систему запускать какую-то активность в отдельном процессе при помощи атрибута <code class="highlighter-rouge">process</code> в манифесте активности – тогда для этой активности будет запускаться отдельный процесс с отдельной виртуальной машиной, памятью и пр.</p>
+
+<p>Второе – у всех классов типа <code class="highlighter-rouge">Activity</code> должен быть публичный дефолтный конструктор. Отсутствие такового вызовет ошибку исполнения, и приложение упадет. Кроме дефолтного конструктора не должно быть других конструкторов – это чисто технически не запрещено, но просто не имеет смысла. Потому что никаких других полезных использований экземпляров Activity, кроме стандартного, нет, и вы никогда не должны сами в вашем коде инстанциировать Acitvity.</p>
+
+<p>Третье – у Activity есть состояния:</p>
+<ul>
+  <li>Начальное (в официальной документации никак не называется), когда объект Activity уже создан, но метод <code class="highlighter-rouge">onCreate</code> еще не вызван,</li>
+  <li><strong>Created</strong> – после вызова <code class="highlighter-rouge">onCreate</code>, когда Activity еще не видна пользователю,</li>
+  <li><strong>Started</strong> (или видимое состояние) – после вызова <code class="highlighter-rouge">onStart</code>, когда Activity становится видна пользователю,</li>
+  <li><strong>Resumed</strong> (или активное состояние) – после вызова <code class="highlighter-rouge">onResume</code>, когда Activity видна и может взаимодействовать с пользователем.</li>
+</ul>
+
+<p>И, наконец, самое интересное – у <code class="highlighter-rouge">Activity</code> есть <strong>методы жизненного цикла</strong>, которые вызываются системой в определенные моменты жизни активности, когда она переходит из одного состояния в другое. У каждого такого метода есть своя специфическая роль:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">onCreate</code> – в этом методе создается и инциализируется UI интерфейс, а также восстанавливается состояние активности в случае, если оно было ранее сохранено.</li>
+  <li><code class="highlighter-rouge">onStart</code> – в этом методе нужно выполнить код для подготовки активности к отображению на экране. Например, если приложение показывает изображение с камеры, то надо включить камеру. Если приложение показывает положение спутников GPS, то надо включить GPS, и т.п.</li>
+  <li><code class="highlighter-rouge">onResume</code> – в этом методе нужно выполнить код для подготовки активности к взаимодействию с пользователем. Например, если это видеоплеер, то можно включить проигрывание видео (которое до этого стояло на паузе).</li>
+</ul>
+
+<h3 id="завершение-работы-activity">Завершение работы Activity</h3>
+
+<p>После запуска Activity переходит в состоянии Resumed и остается в этом состоянии до тех пор, пока система не захочет завершить её работу. Это происходит по разным причинам:</p>
+
+<ul>
+  <li>Пользователь явно выходит из Activity (нажимает системную кнопку Back)</li>
+  <li>Пользователь переключается в другое приложение (другой таск) при помощи системного списка недавно запущенных тасков</li>
+  <li>Пользователь переключается на домащний экран при помощи системной кнопки Home</li>
+  <li>Пользователь убрал таск Activity из списка недавних тасков</li>
+  <li>Приложение само запускает другую активность при помощи метода <code class="highlighter-rouge">Context.startActivity</code> или <code class="highlighter-rouge">Activity.startActivityForResult</code></li>
+  <li>Приложение само завершает текущую активность при помощи метода <code class="highlighter-rouge">Activity.finish()</code></li>
+  <li>Другое приложение вдруг решило отобразиться и захватить фокус во время работы вашего приложения (входящий звонок)</li>
+  <li><strong>Система сама решает завершить процесс какой-то активности из-за нехватки ресурсов (памяти)</strong></li>
+</ul>
+
+<p>Последний пункт из этого списка требует дополнительных разъяснений. Операционная система Android в некоторых ситуациях действительно может решить, что какая-то активность должна быть завершена для того, чтобы освободить память, которой в данный момент не хватает. Нельзя точно сказать, когда это происходит – даже официальная документация описвает это в терминах “вероятности” (likelihood) того, что это произойдет (<a href="https://developer.android.com/guide/components/activities/activity-lifecycle#asem">https://developer.android.com/guide/components/activities/activity-lifecycle#asem</a>). Это не может произойти с активностью в состоянии Resumed, но, вообще, в любом состоянии нужно быть к этому готовым.</p>
+
+<p>Другие варианты так или иначе бывают инициированы пользователем, но общий смысл такой: <strong>вы как разработчик не можете предсказать, когда ваша Activity завершит работу, и должны быть готовы к тому, что это произойдет в любой момент времени, независимо от того, что происходит в вашем приложении</strong>.</p>
+
+<p>Все варианты завершения работы активности имеют один видимый эффект – исчезновение ранее активного экрана с Activity – но отличаются тем, что с Activity происходит на самом деле. Полный сценарий такой:</p>
+
+<ol>
+  <li>Вызывается метод жизненного цикла <code class="highlighter-rouge">onPause</code> (противоположность <code class="highlighter-rouge">onResume</code>), и активность переходит в состояние Paused (то же, что и Started) – в этом состоянии активность еще видна</li>
+  <li>Вызывается метод жизненного цикла <code class="highlighter-rouge">onStop</code> (противоположность <code class="highlighter-rouge">onStart</code>), и активность переходит в состояние Stopped (то же, что и Created) – в этом состоянии активность уже не видна</li>
+  <li>Вызывается метод жизненного цикла <code class="highlighter-rouge">onDestroy</code> (противоположность <code class="highlighter-rouge">onCreate</code>), активность переходит в состояние Destroyed, после чего её жизнь заканичвается, ссылки на неё удаляются, и объект <code class="highlighter-rouge">Activity</code> может быть собран сборщиком мусора.</li>
+  <li>Если это была последняя активность в процессе, то система может завершить процесс.</li>
+</ol>
+
+<p>Это полный сценарий, в котором активность из состояния Resumed переходит в состояние Destroyed – это полное фатальное завршение жизни отдельного экземпляра активности. Но возможны сценарии, в которых этот сценарий выполняется не до конца. На самом деле, он может остановиться на любом шаге: в состоянии Paused, Stopped или Destroyed (c продолжающим работать процессом). Кроме того, пункт 3 (вызов <code class="highlighter-rouge">onDestory</code>) может быть пропущен – иногда система может решить по-быстрому убить процесс без вызова <code class="highlighter-rouge">onDestroy</code>, в то время как вызов <code class="highlighter-rouge">onPause</code> и <code class="highlighter-rouge">onStop</code> гарантирован.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Что происходит?</th>
+      <th>Чем это обычно заканчивается для Activity?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Выход по Back</td>
+      <td>Destroyed</td>
+    </tr>
+    <tr>
+      <td>Вызов finish()</td>
+      <td>Destroyed</td>
+    </tr>
+    <tr>
+      <td>Закрытие таска Activity</td>
+      <td>Destroyed</td>
+    </tr>
+    <tr>
+      <td>Нажатие на Home</td>
+      <td>Stopped</td>
+    </tr>
+    <tr>
+      <td>Переключение в другой таск</td>
+      <td>Stopped</td>
+    </tr>
+    <tr>
+      <td>Запуск другой непрозрачной активности</td>
+      <td>Stopped</td>
+    </tr>
+    <tr>
+      <td>Запуск другой прозрачной активности</td>
+      <td>Paused</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>В методах жизненного цикла <code class="highlighter-rouge">onPause</code> и <code class="highlighter-rouge">onStop</code> обычно выполняется код, противоположный тому, который выполнялся в <code class="highlighter-rouge">onResume</code> и <code class="highlighter-rouge">onStart</code>: если там включалась камера, то здесь ее надо выключить. Если там аллоцировалась память, то здесь ее надо освободить и т.п. Это нужно делать для экономии ресурсов – если в неактивном состоянии ваша активность потребляет меньше памяти, то больше памяти достанется другой, активной в данный момент, и меньше вероятность того, что операционная система решит убить ваше приложение, пока активность находится в неактивном состоянии.</p>
+
+<p>В методе <code class="highlighter-rouge">onDestroy</code> не нужно каким-либо образом уничтожать UI, ранее созданный в методе <code class="highlighter-rouge">onCreate</code> методом <code class="highlighter-rouge">setContentView</code> – вся иерархия View просто будет собрана сборщиком мусора, также как и любые объекты, ссылки на которые держатся только в этом объекте Activity. Однако, если вы аллоцировали какие-то глобальные ресурсы в <code class="highlighter-rouge">onCreate</code>, то их надо освободить.</p>
+
+<p>Если Activity перешла в неактивное состояние (но не уничтожена), то она может вернуться обратно в активное состояние, если, например, пользователь решит вернуться в приложение. В таком случае сценарий старта активности повторяется, начиная с шага, соответствующего состоянию, из которого активность возвращается к жизни. Таким образом, один экземпляр Activity может бескончено крутиться в своем жизненном цикле, переключаясь между состояними Created - Started - Resumed.</p>
+
+<p><img src="img/0710_activity_lifecycle.png" width="1200px" /></p>
+
+<p>Подробно о жизненном цикле Activity <del>можно</del> нужно прочитать в официально документации: <a href="https://developer.android.com/guide/components/activities/activity-lifecycle">https://developer.android.com/guide/components/activities/activity-lifecycle</a></p>
+
+<h2 id="жизненный-цикл-на-практике">Жизненный цикл на практике</h2>
+
+<p>Теперь попробуем пронаблюдать жизненный цикл на примере приложения Hello World, которое мы сделали в <a href="../01_advanced_hello_world/">прошлом уроке</a>. Откройте проект этого приложения и добавьте имплементацию основных методов жизненного цикла в классы всех активностей: <code class="highlighter-rouge">MainActivity</code>, <code class="highlighter-rouge">HelloWorldActivity</code>, <code class="highlighter-rouge">HelloUsernameActivity</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+</code></pre></div></div>
+<p>Во всех активностях уже реализован метод <code class="highlighter-rouge">onCreate</code>, поэтому сейчас надо добавиьт только 5 методов, а не все 6. Ничего особенного мы в этих методах делать не будем, поэтому в теле всех методов есть только вызов <code class="highlighter-rouge">super</code> – это обязательное условие переопределения методов жизненного цикла. Если не вызвать <code class="highlighter-rouge">super</code>, то приложение упадет (в коде <code class="highlighter-rouge">Activity</code> есть специальная проверка на то, что <code class="highlighter-rouge">super</code> вызывается, которая бросает исключение).</p>
+
+<h3 id="логирование-жизненного-цикла">Логирование жизненного цикла</h3>
+
+<p>Теперь добавим логи в эти методы, чтобы по логам следить за выполнением жизненного цикла. Для удобства определим тэг для логирования в билд-скрипте <code class="highlighter-rouge">app/build.gradle</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>defaultConfig {
+	// ... 
+    buildConfigField "String", "LOG_TAG", '"HelloLifecycle"'
+}
+</code></pre></div></div>
+<p>и, чтобы с логами всё было чисто, добавим флаг логирования в release и debug версии приложения в том же <code class="highlighter-rouge">app/build.gradle</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>buildTypes {
+    release {
+    	// ...
+        buildConfigField "boolean", "LOG", "false"
+    }
+    debug {
+    	buildConfigField "boolean", "LOG", "true"
+    }
+}
+</code></pre></div></div>
+<p>Эти константы после сборки будут добавлены в код класса <code class="highlighter-rouge">ru.ok.technopolis.helloworld.BuildConfig</code>. В дебажной версии это выглядит так:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">ru</span><span class="p">.</span><span class="n">ok</span><span class="p">.</span><span class="n">technopolis</span><span class="p">.</span><span class="n">helloworld</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="n">final</span> <span class="n">class</span> <span class="n">BuildConfig</span> <span class="p">{</span>
+    <span class="p">//</span> <span class="n">Fields</span> <span class="k">from</span> <span class="n">build</span> <span class="n">type</span><span class="p">:</span> <span class="n">debug</span>
+    <span class="k">public</span> <span class="n">static</span> <span class="n">final</span> <span class="k">boolean</span> <span class="n">LOG</span> <span class="p">=</span> <span class="nb">true</span><span class="p">;</span>
+    
+    <span class="p">//</span> <span class="n">Fields</span> <span class="k">from</span> <span class="n">default</span> <span class="n">config</span><span class="p">.</span>
+    <span class="k">public</span> <span class="n">static</span> <span class="n">final</span> <span class="k">String</span> <span class="n">LOG_TAG</span> <span class="p">=</span> <span class="s2">"HelloLifecycle"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Добавьте логи во все методы жизненного цикла во всех активносятх с использованием констант из <code class="highlighter-rouge">BuildConfig</code>. При этом в каждом логе должно быть имя класса и название метода:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        if (LOG) Log.d(LOG_TAG, getClass().getSimpleName() + ".onCreate");
+        // ...
+    }
+
+    @Override
+    protected void onStart() {
+        if (LOG) Log.d(LOG_TAG, getClass().getSimpleName() + ".onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        if (LOG) Log.d(LOG_TAG, getClass().getSimpleName() + ".onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        if (LOG) Log.d(LOG_TAG, getClass().getSimpleName() + ".onResume");
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (LOG) Log.d(LOG_TAG, getClass().getSimpleName() + ".onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (LOG) Log.d(LOG_TAG, getClass().getSimpleName() + ".onDestroy");
+        super.onDestroy();
+    }
+</code></pre></div></div>
+
+<h3 id="базовый-сценарий">Базовый сценарий</h3>
+
+<p>Запустите приложение, и вы увидите в логе (лог можно отфильтровать по слову HelloLifecycle):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MainActivity.onCreate
+MainActivity.onStart
+MainActivity.onResume
+</code></pre></div></div>
+<p>Теперь нажмите Back – приложение закроется, а в логе появится следующее:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MainActivity.onPause
+MainActivity.onStop
+MainActivity.onDestroy
+</code></pre></div></div>
+<p>Это базовый сценарий старта и финиша активности, в которой она проходит все стадии жизненного цикла от <code class="highlighter-rouge">onCreate</code> до <code class="highlighter-rouge">onDestroy</code>.</p>
+
+<p><img src="img/lifecycle1.gif" width="400px" /></p>
+
+<h3 id="переключение-между-тасками">Переключение между тасками</h3>
+
+<p>Запустите приложение, затем откройте список недавних тасков (системная кнопка) и переключитесь в какой-нибудь другой таск:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MainActivity.onCreate
+MainActivity.onStart
+MainActivity.onResume
+MainActivity.onPause
+MainActivity.onStop
+</code></pre></div></div>
+<p>Мы видим, что MainActivity не была уничтожена – она была остановлена и осталась в невидимом состоянии. Теперь, если переключиться обратно в таск MainActivity, он вернется в активное состояние, пройдя через вызовы методов жизненного цикла:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MainActivity.onStart
+MainActivity.onResume
+</code></pre></div></div>
+<p><img src="img/lifecycle2.gif" width="400px" /></p>
+
+<h3 id="сценарий-с-двумя-активностями">Сценарий с двумя активностями</h3>
+
+<p>Запустите приложение, нажмите на Hello User – произойдет переход в активность HelloUsernameActivity. С точки зрения MainActivity это будет такой же уход в невидимое состояние, как и в сценарии с переключением между тасками, а с точки зрения HelloUsernameActivity это будет обычный старт, как в базовом сценарии. Здесь инетересно увидеть, как параллельно меняются состояния двух активностей: сначала MainActivity переходит в неактивное состояние (вызывается <code class="highlighter-rouge">onPause</code>), потом стартует и становится видимой вторая активность, и уже после этого MainActivity переходит в невидимое состояние (вызывается <code class="highlighter-rouge">onStop</code>):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MainActivity.onCreate
+MainActivity.onStart
+MainActivity.onResume
+
+MainActivity.onPause
+HelloUsernameActivity.onCreate
+HelloUsernameActivity.onStart
+HelloUsernameActivity.onResume
+MainActivity.onStop
+</code></pre></div></div>
+
+<p>При нажатии на Back и переходе обратно из HelloUsernameActivity в MainActivity всё происходит наоборот: сначала HelloUsernameActivity становится неактивной (<code class="highlighter-rouge">onPause</code>), потом MainActivity возвращается из невидимого состояния в активное (<code class="highlighter-rouge">onStart</code>, <code class="highlighter-rouge">onResume</code>), и только после этого HelloUsernameActivity останавливается и уничтожается (<code class="highlighter-rouge">onStop</code>, <code class="highlighter-rouge">onDestory</code>):</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HelloUsernameActivity.onPause
+MainActivity.onStart
+MainActivity.onResume
+HelloUsernameActivity.onStop
+HelloUsernameActivity.onDestroy
+</code></pre></div></div>
+
+<p><img src="img/lifecycle3.gif" width="400px" /></p>
+
+<h3 id="сценарий-с-полупрозрачной-активностью">Сценарий с полупрозрачной активностью</h3>
+
+<p>В предыдущем примере вторая активность полностью закрывала собой первую активность, поэтому первая активность уходила в невидимое состояние через вызовы <code class="highlighter-rouge">onPause</code> и <code class="highlighter-rouge">onStop</code>. Возможна ситуация, в которой первая активность всё-таки останется видимой в то время, как поверх нее отображается другая активность. Например, если вторая активность отображается в полупрозрачном окне. В таком случае пользователь видит первую активность (которая находится в видимой фазе жизненного цикла), но не может с ней взаимодействовать, потому что в один момент времени только одна активность может быть в активном состоянии.</p>
+
+<p>Попробуем воспроизвести этот сценарий – для этого сделаем окно HelloWorldActivity прозрачным. Для этого нам понадобится создать новую тему и применить её к HelloWorldActivity. Откройте файл <code class="highlighter-rouge">res/values/styles.xml</code>. В нем должен быть приблизительно такой код:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    &lt;!-- Base application theme. --&gt;
+    &lt;style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar"&gt;
+        &lt;!-- Customize your theme here. --&gt;
+        &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;
+        &lt;item name="colorPrimaryDark"&gt;@color/colorPrimaryDark&lt;/item&gt;
+        &lt;item name="colorAccent"&gt;@color/colorAccent&lt;/item&gt;
+    &lt;/style&gt;
+</code></pre></div></div>
+<p>Этот код был автоматически сгенерирован Android Studio при создании проекта, он определяет базовую тему приложения, которая применяется ко всем активностям. Тема – это набор атрибутов со значениями, которые используются в различных компонентах приложения, в-основном, в UI компонентах. В манифесте приложения (в файле <code class="highlighter-rouge">AndroidManifest.xml</code>) у каждой активности можно указать тему, которая к ней будет применяться, и значения атрибутов которой будут использоваться в UI внутри этой активности. Если у активности в манифесте не указана тема, то к ней применяется базовая тема приложения, указанная в элементе application:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"&gt;
+</code></pre></div></div>
+
+<p>На данный момент в нашем приложении базовая тема называется <code class="highlighter-rouge">AppTheme</code>, и она наследует от темы <code class="highlighter-rouge">Theme.AppCompat.Light.DarkActionBar</code> – это какая-то стандартная тема из библиотеки App Compat Support Library, которую  Android Studio решила использовать как дефолтную. Кстати, именно благодаря этой дефолтной теме окно активности выглядит именно так: сплошное окно на весь экран с белым фоном – это определено где-то в родительской теме.</p>
+
+<p>Мы создадим новую тему, в которой унаследуем всё из базовой темы, и переопределим один атрибут для того, чтобы окно активности стало полупрозрачным. Добавьте этот код в файл <code class="highlighter-rouge">res/values/styles.xml</code>:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	&lt;style name="AppTheme.Floating"&gt;
+        &lt;item name="android:windowIsFloating"&gt;true&lt;/item&gt;
+    &lt;/style&gt;
+</code></pre></div></div>
+
+<p>Обратите внимание на название темы: <code class="highlighter-rouge">AppTheme.Floating</code>: оно использует специальный синтаксис, в котором сначала указывается имя родительской темы, потом идет точка, а после точки – уникальное название этой темы. Этот синтаксис равносилен вот такому явному определению темы: <code class="highlighter-rouge">&lt;style name="AppTheme.Floating" parent="AppTheme"&gt;</code> (Который, в свою очередь, является сокращенным вариантом полного каноничного синтаксиса с правильной ссылкой на ресурс родительской темы: <code class="highlighter-rouge">style name="AppTheme.Floating" parent="@style/AppTheme"</code>).</p>
+
+<p>Теперь укажите эту тему в манифесте (<code class="highlighter-rouge">AndroidManifest.xml</code>) у активности HelloWorldActivity:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;activity android:name=".HelloWorldActivity"
+          android:label="@string/activity_hello_world"
+          android:theme="@style/AppTheme.Floating"&gt;
+</code></pre></div></div>
+
+<p>Если запустить приложение и перейти в HelloWorldActivity, то оно будет выглядеть так:</p>
+
+<p><img src="img/0720_translucent_window.png" width="400px" /></p>
+
+<p>Атрибут <code class="highlighter-rouge">windowIsFloating=true</code> сделал окно полупрозрачным и сжал размер контента до минимально необходимого – поэтому мы видим белый фон только у текста в центре экрана. При переходе из MainActivity в HelloWorldActivity и обратно в логе мы видим следующие вызовы методов жизненного цикла:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MainActivity.onPause
+HelloUsernameActivity.onCreate
+HelloUsernameActivity.onStart
+HelloUsernameActivity.onResume
+
+HelloUsernameActivity.onPause
+MainActivity.onResume
+HelloUsernameActivity.onStop
+HelloUsernameActivity.onDestroy
+</code></pre></div></div>
+<p>Отличие от сценария с непрозрачным окном – у MainActivity не вызываются <code class="highlighter-rouge">onStop</code> и <code class="highlighter-rouge">onStart</code>, потому что она остается видимой.</p>
+
+<p><img src="img/lifecycle4.gif" width="400px" /></p>
+
+<p>В этом примере полупрозрачное окно поверх MainActivity было сделано искуственно, но даже если в вашем приложении нет полупрозрачных окон, такой сценарий всё равно возможен, если поверх вашего приложения “выскочит” какое-то другое с полупрозрачным окном. Это совершенно обычное дело, самый простой пример – входящий звонок – и к этому надо быть готовым. Разработчики должны иметь в виду, что их активности могут легко оказаться в видимом, но неактивном состоянии.</p>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>

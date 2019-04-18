@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Обработка тачей | Android курс в Технополисе 2019</title>
+<meta name="generator" content="Jekyll v3.7.4" />
+<meta property="og:title" content="Обработка тачей" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="http://localhost:4000/05_custom_view_animations_touches/054_touches/" />
+<meta property="og:url" content="http://localhost:4000/05_custom_view_animations_touches/054_touches/" />
+<meta property="og:site_name" content="Android курс в Технополисе 2019" />
+<script type="application/ld+json">
+{"url":"http://localhost:4000/05_custom_view_animations_touches/054_touches/","headline":"Обработка тачей","@type":"WebPage","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=d3418c91688b3f949df607a428f4549250f0b594">
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="http://localhost:4000/">Android курс в Технополисе 2019</a></h1>
+      
+
+      <p>В этом уроке мы разберемся с тем как обрабатывать тачи в Android.</p>
+
+<h2 id="motionevent">MotionEvent</h2>
+
+<p><code class="highlighter-rouge">MotionEvent</code> - это событие касания экрана. <code class="highlighter-rouge">MotionEvent</code> работает с любыми способами ввода:</p>
+
+<ul>
+  <li>палец;</li>
+  <li>стилус;</li>
+  <li>мышь.</li>
+</ul>
+
+<p>В рамках этого урока мы будет рассматривать только касания пальцем.</p>
+
+<p><code class="highlighter-rouge">MotionEvent</code> содержит данные только об одном событии, это: касание экрана, нажатие кнопки, перемещение пальца и т.п. Рассмотрим типичный жизненный цикл касаний:</p>
+
+<p><img src="img/motion_event.jpg" width="600" /></p>
+
+<p>Практически всегда обработка касания начинается с события <code class="highlighter-rouge">DOWN</code>, когда пользователь коснулся экрана. Далее, при движении пальца приходит событие <code class="highlighter-rouge">MOVE</code>. Завершается жест событием <code class="highlighter-rouge">UP</code> - в случае если жест завершен правильно, или событием <code class="highlighter-rouge">CANCEL</code>, если жест был отменен. Событий на самом деле больше, но чаще всего придется работать с четырьмя событиями: <code class="highlighter-rouge">DOWN</code>, <code class="highlighter-rouge">MOVE</code>, <code class="highlighter-rouge">UP</code>, <code class="highlighter-rouge">CANCEL</code>.</p>
+
+<h2 id="обработка-событий">Обработка событий</h2>
+
+<p>Самая частая ошибка при обработке событий это хранение ссылки на <code class="highlighter-rouge">MotionEvent</code>. Никогда не храните ссылки на <code class="highlighter-rouge">MotionEvent</code>! Предположим, мы храним предыдущий MotionEvent и сравниваем его с новым. Во время работы приложения мы столкнемся с тем, что у нас все события равны. Почему так получается? Все дело в том, что Android оптимизирует работу с <code class="highlighter-rouge">MotionEvent</code> и для того, что бы не создавать и не уничтожать кучу объектов с событиями тачей, события переиспользуются.</p>
+
+<p><img src="img/handle_event.jpg" width="600" /></p>
+
+<p>Существует <code class="highlighter-rouge">MotionEvent Pool</code> который содержит некоторое количество событий ввода. Когда происходит новое событие тача, пул выдает его при помощи метода <code class="highlighter-rouge">obtain()</code>. Когда работа с тачем завершена, <code class="highlighter-rouge">MotionEvent</code> возвращается обратно в пул при помощи метода <code class="highlighter-rouge">recycle()</code>.</p>
+
+<p>Как же хранить информацию о тачах?</p>
+
+<ul>
+  <li>вызвать вручную <code class="highlighter-rouge">obtain</code> (главное не забыть вызвать <code class="highlighter-rouge">recycle</code>);</li>
+  <li>хранить только необходимую информацию из <code class="highlighter-rouge">MotionEvent</code>.</li>
+</ul>
+
+<h2 id="диспетчеризация-нажатий">Диспетчеризация нажатий</h2>
+
+<p>Как <code class="highlighter-rouge">View</code> понимает что именно ей нужно обработать нажатие? Для этого существует система перехвата тачей:</p>
+
+<p>1) Когда система понимает что произошло событие касания экрана и у нас есть <code class="highlighter-rouge">ViewGroup</code>, которое попадает под область касания, она вызывает метод <code class="highlighter-rouge">onInterceptTouchEvent</code>.</p>
+
+<p>2) <code class="highlighter-rouge">ViewGroup</code> должен ответить будет ли он перехватывать этот тач или нет. В случае, если возвращается <code class="highlighter-rouge">true</code>, будет вызван <code class="highlighter-rouge">onTouchEvent</code>, в противном случае <code class="highlighter-rouge">MotionEvent</code> прокидывается к дочернему <code class="highlighter-rouge">View</code> и там вызывается метод <code class="highlighter-rouge">onTouchEvent</code></p>
+
+<p>3) Если <code class="highlighter-rouge">View</code> обработал событие, то возвращается <code class="highlighter-rouge">true</code> и событие покидает текущую иерархию, в противном случае <code class="highlighter-rouge">MotionEvent</code> будет передан обратно родителю и будет вызыван метод <code class="highlighter-rouge">onTouchEvent</code> родителя.</p>
+
+<p><img src="img/on_touch_event.jpg" width="600" /></p>
+
+<h2 id="multi-touch">Multi touch</h2>
+
+<p>Multi touch это события множественного касания. Когда человек использует несколько пальцев одновременно. Для Multi тачей вводятся два новых события</p>
+
+<ul>
+  <li><code class="highlighter-rouge">POINTER_DOWN</code>. Прикосновение пальцем;</li>
+  <li><code class="highlighter-rouge">POINTER_UP</code>. Поднятие пальца.</li>
+</ul>
+
+<p>Кадому пальцу назначаются два параметра:</p>
+
+<ul>
+  <li>
+    <p>индекс. Порядковый номер пальца. Не привязан к пальцу, один палец может иметь разные индексы в течение одного касания.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">id</code>. Идентификатор пальца. Привязан к конкретному пальцу от начала и до конца касания</p>
+  </li>
+</ul>
+
+<p>Пример:</p>
+
+<p>Коснулись экран одним пальцем. Его параметры: index = 0, id = 0.</p>
+
+<p><img src="img/multi_1.jpg" width="600" /></p>
+
+<p>Коснулись экран вторым пальцем. Его параметры: index = 1, id = 1.</p>
+
+<p><img src="img/multi_2.jpg" width="600" /></p>
+
+<p>Коснулись экран третьим пальцем. Его параметры: index = 2, id = 2.</p>
+
+<p><img src="img/multi_3.jpg" width="600" /></p>
+
+<p>Уберем крайний левый палец. При таком действии индексы пальцев сдвигаются на один, но id остаются прежними.</p>
+
+<p><img src="img/multi_4.jpg" width="600" /></p>
+
+<p>Уберем еще один палец слева. Оставшийся палец будет иметь параметры: index = 0, id = 2.</p>
+
+<p><img src="img/multi_5.jpg" width="600" /></p>
+
+<p>Вернем недавно убранный палец. Его параметры будут: index = 0, id = 0.</p>
+
+<p><img src="img/multi_6.jpg" width="600" /></p>
+
+<p>И вернем крайний левый палец. Его параметры: index = 1, id = 1.</p>
+
+<p><img src="img/multi_7.jpg" width="600" /></p>
+
+<p>Для того, что бы понять какой жест сейчас производил пользователь приходится обрабатывать очень много данных, хранить все касания, запоминать положение пальцев и т.п. в Android уже есть классы, упрощающие нам работу. Об этих классах пойдет речь в следующих разделах.</p>
+
+<h2 id="отслеживание-скорости">Отслеживание скорости</h2>
+
+<p>Для того, что бы отслеживать скорость перемещения пальцев в Android существует класс <code class="highlighter-rouge">VelocityTracker</code>. Работа с ним чем-то похожа на работу с <code class="highlighter-rouge">MotionEvent</code> - объекты тоже находятся в пуле и для получения <code class="highlighter-rouge">VelocityTracker</code> необходимо вызвать метод <code class="highlighter-rouge">obtain</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">vt</span> <span class="o">=</span> <span class="n">VelocityTracker</span><span class="o">.</span><span class="na">obtain</span><span class="o">()</span>
+</code></pre></div></div>
+
+<p>Что бы <code class="highlighter-rouge">VelocityTracker</code> понимал как пользователь передвигает пальцы, необходимо все <code class="highlighter-rouge">MotionEvent</code> передавать в метод <code class="highlighter-rouge">addMovement</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">vt</span><span class="o">.</span><span class="na">addMovement</span><span class="o">(</span><span class="n">event</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>Когда мы захотим получить текущую скорость перемещения, нужно вызвать метод:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">vt</span><span class="o">.</span><span class="na">computeCurrentVelocity</span><span class="o">(</span><span class="n">VELOCITY_UNITS</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>Что такое <code class="highlighter-rouge">VELOCITY_UNITS</code>? Это то количество пикселей, относительно которых будет считаться скорость. Например, если <code class="highlighter-rouge">VELOCITY_UNITS = 1000</code>, то скорость будет измеряться в том, сколько тысяч пикселей в секунду проходит палец на экране.</p>
+
+<p>После работы, нужно не забывать утилизировать объект вызовом:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">vt</span><span class="o">.</span><span class="na">recycle</span><span class="o">()</span>
+</code></pre></div></div>
+
+<h2 id="gesturedetector">GestureDetector</h2>
+
+<p>Класс, который позволяет понять какой именно жест сейчас сделал пользователь. Аналогично с классом <code class="highlighter-rouge">VelocityTracker</code> необходимо передавать все тачи в <code class="highlighter-rouge">GestureDetector</code> и в случае, если произошел какой-то из известных жестов, будет вызван соответствующий метод:</p>
+
+<ul>
+  <li>OnDown</li>
+  <li>OnFling</li>
+  <li>OnLongPress</li>
+  <li>OnScroll</li>
+  <li>onShowPress</li>
+  <li>onSingleTapUp</li>
+  <li>…</li>
+</ul>
+
+<p>Но не все жесты распознает <code class="highlighter-rouge">GestureDetector</code>, например, для распознавания жеста приближения, есть специальный класс <code class="highlighter-rouge">ScaleGestureDetector</code>.</p>
+
+<h2 id="что-почитать">Что почитать</h2>
+
+<p>https://developer.android.com/training/gestures
+https://android.jlelse.eu/the-android-touch-system-from-a-slightly-different-perspective-71f29c86369a
+https://developer.android.com/reference/android/view/VelocityTracker</p>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+    
+  </body>
+</html>
