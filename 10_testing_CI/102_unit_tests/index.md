@@ -577,6 +577,14 @@ public class ShadowView {
 * В которых много перемещений между Activity
 * В которых применяется много потоков и нужна синхронизация между ними.
 
+## Что почитать и посмотреть
+
+1. [https://habr.com/ru/post/120101/](https://habr.com/ru/post/120101/) - про JUnit вкратце
+2. [https://github.com/mockito/mockito/wiki/How-to-write-good-tests](https://github.com/mockito/mockito/wiki/How-to-write-good-tests) - что стоит мокировать, а что нет.
+3. [https://habr.com/ru/company/e-Legion/blog/320898/](https://habr.com/ru/company/e-Legion/blog/320898/) - про Robolectric
+4. [http://robolectric.blogspot.com/2011/01/how-to-create-your-own-shadow-classes.html](http://robolectric.blogspot.com/2011/01/how-to-create-your-own-shadow-classes.html) - Shadow extension
+5. [http://robolectric.org/extending/](http://robolectric.org/extending/) - Shadow extension
+
 
 
 

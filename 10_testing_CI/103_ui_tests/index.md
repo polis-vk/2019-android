@@ -400,3 +400,12 @@ Espresso тесты запускаются в одном процессе с т�
 
 <img src="img/how_tests_are_running.png" width="1200px"/>
 
+## Что почитать и посмотреть
+
+1. [https://www.youtube.com/watch?v=isihPOY2vS4](https://www.youtube.com/watch?v=isihPOY2vS4) - главные фишки Espresso
+2. [https://codelabs.developers.google.com/codelabs/android-testing/#0](https://codelabs.developers.google.com/codelabs/android-testing/#0) - MUST HAVE CODE LAB
+3. [https://developer.android.com/training/testing/espresso/basics](https://developer.android.com/training/testing/espresso/basics) - Espresso для начинающих
+4. [https://medium.com/@dnkilic/espresso-recipes-for-android-afb2466b8137](https://medium.com/@dnkilic/espresso-recipes-for-android-afb2466b8137) - рецепты Espresso
+5. [https://www.youtube.com/watch?v=pK7W5npkhho](https://www.youtube.com/watch?v=pK7W5npkhho) - что нового в инструментах тестирования
+6. [https://jabknowsnothing.wordpress.com/](https://jabknowsnothing.wordpress.com/) - о старте активити в тестах
+

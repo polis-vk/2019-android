@@ -9,3 +9,4 @@ title: Курс Android разработки в Технополисе
 - [Unit тесты](./102_unit_tests/)
 - [UI тесты](./103_ui_tests/)
 - [CI/CD](./104_ci_cd/)
+- [Исходники](https://github.com/gopito/android-testing-example)
