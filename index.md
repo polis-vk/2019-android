@@ -11,4 +11,5 @@ title: Курс Android разработки в Технополисе
 4. Хранение данных
 5. [Custom view, Animations, Touches](05_custom_view_animations_touches/)
 6. [Тестирование и CI/CD](10_testing_CI/)
+11. [Kotlin](11_kotlin/)
 
