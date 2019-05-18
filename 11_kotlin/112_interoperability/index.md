@@ -75,7 +75,7 @@ class Formatter {
 }
 ```
 В Java вызов будет таким `Formatter.DEFAULT_FORMAT`, если не использовать данную аннотацию, 
-то вы сталкнетесь с таким `Formatter.Companion.DEFAULT_FORMAT`. 
+то вы столкнетесь с таким `Formatter.Companion.DEFAULT_FORMAT`. 
 Это в случаях, когда у вас объекты (не String). Если используются примитивы или String, то достаточно пометить значение `const`.
 ```kotlin
 class Formatter {
