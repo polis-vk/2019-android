@@ -13,4 +13,5 @@ title: Курс Android разработки в Технополисе
 6. [Тестирование и CI/CD](10_testing_CI/)
 11. [Kotlin](11_kotlin/)
 12. [Reactive Programming With RxJava](12_reactive_programming/reactive-programming-with-rxjava.md)
+13. [Battery Consumption](13_battery_consumption)
 
