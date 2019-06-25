@@ -259,7 +259,7 @@ int result = 1 - 2;
 Assert.assertEquals(-1, result);
 ```
 
-Гугл рекомендует юзать свою либу для ассершена [Туториал к Google Truth](http://google.github.io/truth/).
+Гугл рекомендует юзать свою либу для ассершена [Туториал к Google Truth](https://circleci.com).
 Также есть библиотека [Туториал к hamcrest либе](http://hamcrest.org/JavaHamcrest/tutorial), в которой много много дополнительных матчеров.
 Она намного чаще используется в паре с JUnit'ом.
 
