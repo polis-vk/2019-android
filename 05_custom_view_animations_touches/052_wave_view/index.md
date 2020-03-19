@@ -276,7 +276,7 @@ protected void onDraw(Canvas canvas) {
 
 <img src="img/wave_final.png" width="400px"/>
 
-Код примера можно посмотреть [тут](https://github.com/otopba/polis-mail-ru-customview-sample)
+Код примера можно посмотреть [тут](https://github.com/polis-mail-ru/polis-mail-ru-customview-sample)
 
 ## Что почитать
 
